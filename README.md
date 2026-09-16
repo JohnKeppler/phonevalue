@@ -39,10 +39,25 @@ El proyecto incluye Capacitor + un plugin Kotlin (`PhoneUsage`) que:
 - lee almacenamiento total/libre y señales básicas de batería / red
 - alimenta el motor %/€ existente; las categorías se marcan **medido** vs **estimado**
 
+### Activar el workflow de Actions (una vez)
+
+El YAML listo está en `docs/android-apk.workflow.yml`. Hay que publicarlo como workflow (el token OAuth de este entorno no tiene scope `workflow`):
+
+```bash
+mkdir -p .github/workflows
+cp docs/android-apk.workflow.yml .github/workflows/android-apk.yml
+git add .github/workflows/android-apk.yml
+git commit -m "ci: Android APK workflow"
+git push
+```
+
+(Con `gh auth refresh -s workflow` también se puede empujar desde CI/bots.)
+
 ### Descargar e instalar el APK
 
-1. Abre las Actions del repo: https://github.com/JohnKeppler/phonevalue/actions/workflows/android-apk.yml  
-2. Entra en la ejecución más reciente (o lanza **Run workflow**).  
+1. Abre las Actions: https://github.com/JohnKeppler/phonevalue/actions  
+   (tras publicar el workflow: `…/actions/workflows/android-apk.yml`)  
+2. Entra en la ejecución más reciente (o **Run workflow**).  
 3. Descarga el artefacto **`app-debug`** → dentro está `app-debug.apk`.  
 4. Copia el APK al móvil.  
 5. En Android: **Ajustes → Seguridad** (o Apps) → permite **instalar apps desconocidas** para el explorador/Archivos.  
