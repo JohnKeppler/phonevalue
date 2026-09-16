@@ -73,6 +73,16 @@ src/
   App.tsx
 ```
 
+## Instalar como app (Android)
+
+La demo en GitHub Pages es una **PWA** instalable.
+
+1. Abre en Chrome: https://johnkeppler.github.io/phonevalue/
+2. Menú (⋮) → **Instalar app** o **Añadir a pantalla de inicio**
+3. Confirma. ValorMóvil se abrirá en modo pantalla completa (standalone).
+
+> Requiere HTTPS (GitHub Pages ya lo ofrece). El manifiesto y el service worker se sirven bajo `/phonevalue/`.
+
 ## Licencia
 
 Prototipo privado — uso interno / demo.
