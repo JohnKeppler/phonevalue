@@ -13,7 +13,12 @@ interface Props {
 
 export function Dashboard({ profile, onShowRecs, onReset }: Props) {
   const result = useMemo(
-    () => calculateUtilization(profile.purchasePrice, profile.utilization),
+    () =>
+      calculateUtilization(
+        profile.purchasePrice,
+        profile.utilization,
+        profile.badges,
+      ),
     [profile],
   )
   const [selected, setSelected] = useState<CategoryResult | null>(null)
@@ -28,7 +33,17 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
           <h1 className="text-xl font-bold text-white">Tu aprovechamiento</h1>
           <p className="text-xs text-slate-400">
             {USAGE_LABELS[profile.usageType]} · {profile.purchasePrice} €
+            {profile.dataSource === 'measured'
+              ? ' · medido'
+              : profile.dataSource === 'demo'
+                ? ' · demo'
+                : ''}
           </p>
+          {profile.confidenceNote && (
+            <p className="mt-1 text-[11px] text-emerald-400/90">
+              {profile.confidenceNote}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -108,7 +123,7 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
         </ul>
       </section>
 
-      <TransparencyNote />
+      <TransparencyNote dataSource={profile.dataSource} historyDays={profile.historyDays} />
 
       {/* Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 py-3 backdrop-blur">

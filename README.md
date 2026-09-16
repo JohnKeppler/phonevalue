@@ -1,10 +1,17 @@
 # ValorMóvil (PhoneValue)
 
-Prototipo web en español que estima **cuanto del hardware y las funciones de tu móvil aprovechas de verdad** — en % y en euros — y recomienda alternativas más baratas que encajan con tu uso real.
+App en español que estima **cuánto del hardware y las funciones de tu móvil aprovechas de verdad** — en % y en euros — y recomienda alternativas más baratas que encajan con tu uso real.
 
-> Demo con datos simulados. En Android real se usaria `UsageStats` y señales del sistema.
+Hay **dos caminos**:
 
-## Cómo ejecutar
+| Camino | Qué mide | Cómo instalar |
+|--------|----------|---------------|
+| **PWA (GitHub Pages)** | Datos demo / sintéticos | Añadir a pantalla de inicio |
+| **APK Android (Capacitor)** | `UsageStats` real + almacenamiento / batería / red | Descargar artefacto de Actions |
+
+> Privacidad: el listado de apps y tiempos de uso **se queda en el dispositivo**. No se sube a ningún servidor.
+
+## Cómo ejecutar (web)
 
 ```bash
 npm install
@@ -16,24 +23,59 @@ Abre la URL que muestre Vite (normalmente `http://localhost:5173`).
 Otros comandos:
 
 ```bash
-npm test          # tests del motor (Vitest)
-npm run build     # build de produccion
-npm run preview   # previsualizar el build
+npm test              # tests del motor (Vitest)
+npm run build         # build web / PWA (base /phonevalue/ para GitHub Pages)
+npm run preview       # previsualizar el build
+npm run build:android # build web para Capacitor (base /) + cap sync
 ```
 
-## Que incluye
+## App Android nativa (APK)
 
-1. **Onboarding** — precio de compra, presupuesto siguiente, tipo de uso (ligero / equilibrado / gaming-foto) y boton de perfil demo.
-2. **Dashboard** — utilización global S%, € aprovechados vs desperdiciados, desglose de 10 categorias con barras y badges *medido* / *estimado*.
-3. **Detalle de categoria** — modal con nota de cómo se calcula.
-4. **Recomendaciones** — top 3 del catalogo local filtrado por presupuesto y necesidades, con precio, encaje, ahorro estimado y motivos.
-5. **Nota de transparencia** — deja claro que son datos demo.
+El proyecto incluye Capacitor + un plugin Kotlin (`PhoneUsage`) que:
+
+- comprueba si el permiso **Acceso al uso** (`PACKAGE_USAGE_STATS`) está concedido
+- abre la pantalla de ajustes del sistema para concederlo
+- consulta `UsageStats` (ventana ~30 días) y agrega tiempo en primer plano por paquete + cobertura (`X días de historial`)
+- lee almacenamiento total/libre y señales básicas de batería / red
+- alimenta el motor %/€ existente; las categorías se marcan **medido** vs **estimado**
+
+### Descargar e instalar el APK
+
+1. Abre las Actions del repo: https://github.com/JohnKeppler/phonevalue/actions/workflows/android-apk.yml  
+2. Entra en la ejecución más reciente (o lanza **Run workflow**).  
+3. Descarga el artefacto **`app-debug`** → dentro está `app-debug.apk`.  
+4. Copia el APK al móvil.  
+5. En Android: **Ajustes → Seguridad** (o Apps) → permite **instalar apps desconocidas** para el explorador/Archivos.  
+6. Instala `app-debug.apk` y ábrelo.  
+7. En ValorMóvil pulsa **Abrir ajustes de Acceso al uso**, activa el interruptor de ValorMóvil, vuelve y pulsa **Leer datos del teléfono**.  
+8. Revisa el dashboard: badges **medido** / **estimado** y la nota de confianza según los días de historial.
+
+> Solo Android. En el navegador el botón nativo no aparece; queda el perfil demo / sintético.
+
+### Build local del APK (opcional)
+
+Requiere JDK 17+ y Android SDK:
+
+```bash
+npm ci
+npm run build:android
+cd android && ./gradlew assembleDebug
+# APK: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Qué incluye (UI)
+
+1. **Onboarding** — precio, presupuesto, tipo de uso; en Android: **Leer datos del teléfono**; fallback demo.  
+2. **Dashboard** — S%, € aprovechados/desperdiciados, 10 categorías con badges.  
+3. **Detalle de categoría** — modal con nota de cálculo.  
+4. **Recomendaciones** — top 3 del catálogo local.  
+5. **Transparencia** — medido vs demo / estimado.
 
 ## Motor
 
 Pesos (suman 100 %):
 
-| Categoria        | Peso |
+| Categoría        | Peso |
 |------------------|------|
 | SoC              | 16   |
 | Pantalla         | 18   |
@@ -46,7 +88,7 @@ Pesos (suman 100 %):
 | Sensores y pagos | 5    |
 | Software / marca | 5    |
 
-Formulas:
+Fórmulas:
 
 - `€_asignados = P × w/100`
 - `€_aprov = asignados × u/100`
@@ -55,33 +97,35 @@ Formulas:
 
 Perfil demo `P = 1000 €` → ~**310 €** aprovechados / ~**690 €** desperdiciados / ~**31 %**.
 
-Recomendacion: catalogo JSON local (22 móviles), filtro duro por presupuesto (+5 %) y necesidades, penalizacion asimetrica α≈1.2 (infra) / β≈0.4 (exceso), top 3.
-
 ## Stack
 
-- Vite + React 19 + TypeScript
-- Tailwind CSS v4
-- Vitest (tests unitarios del motor)
+- Vite + React 19 + TypeScript + Tailwind CSS v4
+- Vitest
+- Capacitor 7 (Android) + plugin Kotlin local `PhoneUsage`
+- GitHub Actions → artefacto `app-debug.apk`
 
 ## Estructura clave
 
 ```
 src/
-  engine/          # calculo, pesos, recomendacion + tests
-  data/            # perfil demo + catalogo de móviles
+  engine/          # cálculo, pesos, recomendación, mapUsage
+  data/            # perfil demo + catálogo
   components/      # UI en español
-  App.tsx
+  native/          # bridge Capacitor → PhoneUsage
+android/
+  app/.../plugins/PhoneUsagePlugin.kt
+.github/workflows/android-apk.yml
 ```
 
-## Instalar como app (Android)
+## Instalar como PWA (GitHub Pages)
 
-La demo en GitHub Pages es una **PWA** instalable.
+La demo en GitHub Pages sigue siendo una **PWA** instalable (datos demo):
 
 1. Abre en Chrome: https://johnkeppler.github.io/phonevalue/
 2. Menú (⋮) → **Instalar app** o **Añadir a pantalla de inicio**
 3. Confirma. ValorMóvil se abrirá en modo pantalla completa (standalone).
 
-> Requiere HTTPS (GitHub Pages ya lo ofrece). El manifiesto y el service worker se sirven bajo `/phonevalue/`.
+> El build de Pages usa `npm run build` (base `/phonevalue/`). El APK usa `npm run build:android` (base `/`). Ambos conviven.
 
 ## Licencia
 

@@ -1,5 +1,6 @@
 import { CATEGORIES, DEMO_BADGES } from './weights'
 import type {
+  BadgeKind,
   CategoryId,
   CategoryResult,
   UtilizationMap,
@@ -17,6 +18,7 @@ import type {
 export function calculateUtilization(
   price: number,
   utilization: UtilizationMap,
+  badgeOverrides?: Partial<Record<CategoryId, BadgeKind>>,
 ): UtilizationResult {
   if (price <= 0) {
     throw new Error('El precio debe ser positivo')
@@ -27,6 +29,9 @@ export function calculateUtilization(
     const assignedEuro = (price * meta.weight) / 100
     const usedEuro = (assignedEuro * u) / 100
     const wastedEuro = assignedEuro - usedEuro
+    const badge =
+      badgeOverrides?.[meta.id as CategoryId] ??
+      DEMO_BADGES[meta.id as CategoryId]
     return {
       id: meta.id,
       label: meta.label,
@@ -35,7 +40,7 @@ export function calculateUtilization(
       assignedEuro: round2(assignedEuro),
       usedEuro: round2(usedEuro),
       wastedEuro: round2(wastedEuro),
-      badge: DEMO_BADGES[meta.id as CategoryId],
+      badge,
       howCalculated: meta.howCalculated,
     }
   })

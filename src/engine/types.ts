@@ -15,6 +15,8 @@ export type UsageType = 'ligero' | 'equilibrado' | 'gaming-foto'
 
 export type BadgeKind = 'medido' | 'estimado'
 
+export type DataSource = 'demo' | 'synthetic' | 'measured'
+
 export interface CategoryMeta {
   id: CategoryId
   label: string
@@ -74,6 +76,11 @@ export interface UserProfile {
   nextBudget: number
   usageType: UsageType
   utilization: UtilizationMap
+  /** Override badges when measured from the device */
+  badges?: Partial<Record<CategoryId, BadgeKind>>
+  dataSource?: DataSource
+  historyDays?: number
+  confidenceNote?: string
 }
 
 export interface Recommendation {

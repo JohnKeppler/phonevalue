@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { UsageType, UserProfile } from '../engine/types'
 import { DEMO_PROFILE, USAGE_HINTS, USAGE_LABELS } from '../data/demo'
+import { isNativeAndroid, PhoneUsage } from '../native/phoneUsage'
+import { mapUsageToUtilization } from '../engine/mapUsage'
 
 interface Props {
   onComplete: (profile: UserProfile) => void
@@ -10,14 +12,27 @@ export function Onboarding({ onComplete }: Props) {
   const [price, setPrice] = useState(899)
   const [budget, setBudget] = useState(450)
   const [usage, setUsage] = useState<UsageType>('equilibrado')
+  const [native, setNative] = useState(false)
+  const [usageGranted, setUsageGranted] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<string | null>(null)
+
+  useEffect(() => {
+    const isNative = isNativeAndroid()
+    setNative(isNative)
+    if (!isNative) return
+    PhoneUsage.isUsageAccessGranted()
+      .then((r) => setUsageGranted(r.granted))
+      .catch(() => setUsageGranted(false))
+  }, [])
 
   function loadDemo() {
-    onComplete({ ...DEMO_PROFILE })
+    onComplete({ ...DEMO_PROFILE, dataSource: 'demo' })
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    // Perfil sintetico segun tipo de uso (sin demo completo)
     const base = DEMO_PROFILE.utilization
     const factor =
       usage === 'ligero' ? 0.85 : usage === 'gaming-foto' ? 1.15 : 1
@@ -32,7 +47,81 @@ export function Onboarding({ onComplete }: Props) {
       nextBudget: budget,
       usageType: usage,
       utilization,
+      dataSource: 'synthetic',
     })
+  }
+
+  async function openUsageSettings() {
+    setError(null)
+    try {
+      await PhoneUsage.openUsageAccessSettings()
+      setStatus(
+        'Activa «ValorMóvil» en Acceso al uso y vuelve aquí. Luego pulsa Leer datos.',
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo abrir Ajustes')
+    }
+  }
+
+  async function refreshPermission() {
+    try {
+      const r = await PhoneUsage.isUsageAccessGranted()
+      setUsageGranted(r.granted)
+      setStatus(r.granted ? 'Permiso concedido. Ya puedes leer datos.' : null)
+    } catch {
+      setUsageGranted(false)
+    }
+  }
+
+  async function readPhoneData() {
+    setBusy(true)
+    setError(null)
+    setStatus(null)
+    try {
+      const { granted } = await PhoneUsage.isUsageAccessGranted()
+      setUsageGranted(granted)
+      if (!granted) {
+        setError(
+          'Necesitas conceder Acceso al uso (Usage Access) en Ajustes del sistema.',
+        )
+        setBusy(false)
+        return
+      }
+
+      const [summary, storage, signals] = await Promise.all([
+        PhoneUsage.getUsageSummary({ rangeDays: 30 }),
+        PhoneUsage.getStorageInfo().catch(() => null),
+        PhoneUsage.getDeviceSignals().catch(() => null),
+      ])
+
+      const measured = mapUsageToUtilization(
+        summary,
+        storage,
+        signals,
+        usage,
+      )
+
+      onComplete({
+        purchasePrice: price,
+        nextBudget: budget,
+        usageType: usage,
+        utilization: measured.utilization,
+        badges: measured.badges,
+        dataSource: 'measured',
+        historyDays: measured.historyDays,
+        confidenceNote: measured.confidenceNote,
+      })
+    } catch (e) {
+      const msg =
+        e && typeof e === 'object' && 'message' in e
+          ? String((e as { message: string }).message)
+          : e instanceof Error
+            ? e.message
+            : 'Error al leer datos del teléfono'
+      setError(msg)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -106,6 +195,55 @@ export function Onboarding({ onComplete }: Props) {
           </div>
         </fieldset>
 
+        {native && (
+          <div className="rounded-xl border border-brand-500/40 bg-brand-600/10 p-4">
+            <p className="mb-2 text-sm font-semibold text-brand-200">
+              Datos reales del teléfono (Android)
+            </p>
+            <p className="mb-3 text-xs text-slate-400">
+              Lee UsageStats en el dispositivo. La lista de apps no se sube a
+              ningún servidor.
+            </p>
+            {usageGranted === false && (
+              <button
+                type="button"
+                onClick={openUsageSettings}
+                className="mb-2 w-full rounded-xl border border-amber-500/50 bg-amber-500/10 py-2.5 text-sm font-medium text-amber-200"
+              >
+                Abrir ajustes de Acceso al uso
+              </button>
+            )}
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={readPhoneData}
+                className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 disabled:opacity-60"
+              >
+                {busy ? 'Leyendo…' : 'Leer datos del teléfono'}
+              </button>
+              <button
+                type="button"
+                onClick={refreshPermission}
+                className="w-full rounded-lg py-1.5 text-xs text-slate-400 hover:text-white"
+              >
+                Comprobar permiso otra vez
+                {usageGranted === true
+                  ? ' · concedido ✓'
+                  : usageGranted === false
+                    ? ' · pendiente'
+                    : ''}
+              </button>
+            </div>
+            {status && (
+              <p className="mt-2 text-xs text-emerald-300/90">{status}</p>
+            )}
+            {error && (
+              <p className="mt-2 text-xs text-orange-300">{error}</p>
+            )}
+          </div>
+        )}
+
         <div className="mt-auto flex flex-col gap-3 pt-4">
           <button
             type="submit"
@@ -120,6 +258,12 @@ export function Onboarding({ onComplete }: Props) {
           >
             Cargar perfil demo (1000 € → ~31 %)
           </button>
+          {!native && (
+            <p className="text-center text-[11px] text-slate-500">
+              En el navegador solo hay datos demo/sintéticos. Instala el APK
+              Android para leer UsageStats reales.
+            </p>
+          )}
         </div>
       </form>
     </div>
