@@ -9,8 +9,8 @@ interface Props {
 }
 
 export function Onboarding({ onComplete }: Props) {
-  const [price, setPrice] = useState(899)
-  const [budget, setBudget] = useState(450)
+  const [priceText, setPriceText] = useState('400')
+  const [budgetText, setBudgetText] = useState('250')
   const [usage, setUsage] = useState<UsageType>('equilibrado')
   const [native, setNative] = useState(false)
   const [usageGranted, setUsageGranted] = useState<boolean | null>(null)
@@ -27,12 +27,24 @@ export function Onboarding({ onComplete }: Props) {
       .catch(() => setUsageGranted(false))
   }, [])
 
+  function parseEuros(raw: string, fallback: number): number {
+    const cleaned = raw.replace(/[^0-9]/g, '')
+    if (cleaned === '') return fallback
+    const n = Number(cleaned)
+    if (!Number.isFinite(n) || n <= 0) return fallback
+    return Math.min(2500, Math.max(50, n))
+  }
+
   function loadDemo() {
     onComplete({ ...DEMO_PROFILE, dataSource: 'demo' })
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
+    const price = parseEuros(priceText, 400)
+    const budget = parseEuros(budgetText, 250)
+    setPriceText(String(price))
+    setBudgetText(String(budget))
     const base = DEMO_PROFILE.utilization
     const factor =
       usage === 'ligero' ? 0.85 : usage === 'gaming-foto' ? 1.15 : 1
@@ -101,6 +113,11 @@ export function Onboarding({ onComplete }: Props) {
         usage,
       )
 
+      const price = parseEuros(priceText, 400)
+      const budget = parseEuros(budgetText, 250)
+      setPriceText(String(price))
+      setBudgetText(String(budget))
+
       onComplete({
         purchasePrice: price,
         nextBudget: budget,
@@ -147,11 +164,11 @@ export function Onboarding({ onComplete }: Props) {
             Precio de compra de tu móvil actual (€)
           </span>
           <input
-            type="number"
-            min={50}
-            max={2500}
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={priceText}
+            onChange={(e) => setPriceText(e.target.value.replace(/[^0-9]/g, ''))}
             className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-4 py-3 text-lg text-white outline-none ring-brand-500 focus:ring-2"
           />
         </label>
@@ -161,11 +178,11 @@ export function Onboarding({ onComplete }: Props) {
             Presupuesto para el próximo móvil (€)
           </span>
           <input
-            type="number"
-            min={50}
-            max={2500}
-            value={budget}
-            onChange={(e) => setBudget(Number(e.target.value))}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={budgetText}
+            onChange={(e) => setBudgetText(e.target.value.replace(/[^0-9]/g, ''))}
             className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-4 py-3 text-lg text-white outline-none ring-brand-500 focus:ring-2"
           />
         </label>
