@@ -3,7 +3,8 @@ import type { CategoryResult, UserProfile } from '../engine/types'
 import { calculateUtilization } from '../engine/calculate'
 import { CategoryDetail } from './CategoryDetail'
 import { TransparencyNote } from './TransparencyNote'
-import { USAGE_LABELS } from '../data/demo'
+import { UsageCharts } from './UsageCharts'
+import { intentLabel } from '../data/intents'
 
 interface Props {
   profile: UserProfile
@@ -13,10 +14,16 @@ interface Props {
 
 export function Dashboard({ profile, onShowRecs, onReset }: Props) {
   const result = useMemo(
-    () => calculateUtilization(profile.purchasePrice, profile.utilization),
+    () =>
+      calculateUtilization(
+        profile.purchasePrice,
+        profile.utilization,
+        profile.badges,
+      ),
     [profile],
   )
   const [selected, setSelected] = useState<CategoryResult | null>(null)
+  const intentText = profile.nextIntents.map(intentLabel).join(' · ')
 
   return (
     <div className="mx-auto max-w-lg px-4 pb-28 pt-6">
@@ -27,8 +34,23 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
           </p>
           <h1 className="text-xl font-bold text-white">Tu aprovechamiento</h1>
           <p className="text-xs text-slate-400">
-            {USAGE_LABELS[profile.usageType]} · {profile.purchasePrice} €
+            {profile.purchasePrice} €
+            {profile.dataSource === 'measured'
+              ? ' · medido'
+              : profile.dataSource === 'demo'
+                ? ' · demo'
+                : ''}
           </p>
+          {intentText && (
+            <p className="mt-1 text-[11px] text-slate-500">
+              Próximo móvil: {intentText}
+            </p>
+          )}
+          {profile.confidenceNote && (
+            <p className="mt-1 text-[11px] text-emerald-400/90">
+              {profile.confidenceNote}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -39,7 +61,6 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
         </button>
       </header>
 
-      {/* Global S */}
       <section className="mb-5 overflow-hidden rounded-2xl border border-slate-600/80 bg-gradient-to-br from-slate-800 to-slate-900 p-5 shadow-xl">
         <div className="flex items-end justify-between gap-4">
           <div>
@@ -68,49 +89,10 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
         </div>
       </section>
 
-      {/* Breakdown */}
-      <section className="mb-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-300">
-          Desglose por categoria
-        </h2>
-        <ul className="space-y-2">
-          {result.categories.map((cat) => (
-            <li key={cat.id}>
-              <button
-                type="button"
-                onClick={() => setSelected(cat)}
-                className="w-full rounded-xl border border-slate-700/80 bg-slate-800/60 p-3 text-left transition hover:border-brand-500/50 hover:bg-slate-800"
-              >
-                <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-white">
-                    {cat.label}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Badge kind={cat.badge} />
-                    <span className="text-sm tabular-nums text-slate-300">
-                      {cat.utilization}%
-                    </span>
-                  </span>
-                </div>
-                <div className="mb-1.5 h-2 overflow-hidden rounded-full bg-slate-700">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 transition-all"
-                    style={{ width: `${cat.utilization}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-slate-400">
-                  <span>{cat.usedEuro} € usados</span>
-                  <span>{cat.wastedEuro} € desperdicio</span>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <UsageCharts categories={result.categories} onSelect={setSelected} />
 
-      <TransparencyNote />
+      <TransparencyNote dataSource={profile.dataSource} historyDays={profile.historyDays} />
 
-      {/* Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto max-w-lg">
           <button
@@ -127,20 +109,6 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
         <CategoryDetail category={selected} onClose={() => setSelected(null)} />
       )}
     </div>
-  )
-}
-
-function Badge({ kind }: { kind: 'medido' | 'estimado' }) {
-  return (
-    <span
-      className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
-        kind === 'medido'
-          ? 'bg-emerald-500/20 text-emerald-300'
-          : 'bg-amber-500/20 text-amber-300'
-      }`}
-    >
-      {kind}
-    </span>
   )
 }
 

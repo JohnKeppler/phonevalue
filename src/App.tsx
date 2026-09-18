@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { UserProfile } from './engine/types'
+import type { NextIntent, UserProfile } from './engine/types'
 import { Onboarding } from './components/Onboarding'
 import { Dashboard } from './components/Dashboard'
 import { Recommendations } from './components/Recommendations'
@@ -20,13 +20,21 @@ export default function App() {
     setScreen('onboarding')
   }
 
+  function handleIntents(nextIntents: NextIntent[]) {
+    setProfile((prev) => (prev ? { ...prev, nextIntents } : prev))
+  }
+
   if (screen === 'onboarding' || !profile) {
     return <Onboarding onComplete={handleComplete} />
   }
 
   if (screen === 'recommendations') {
     return (
-      <Recommendations profile={profile} onBack={() => setScreen('dashboard')} />
+      <Recommendations
+        profile={profile}
+        onBack={() => setScreen('dashboard')}
+        onIntentsChange={handleIntents}
+      />
     )
   }
 

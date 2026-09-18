@@ -11,9 +11,21 @@ export type CategoryId =
   | 'sensores'
   | 'software'
 
-export type UsageType = 'ligero' | 'equilibrado' | 'gaming-foto'
+/**
+ * Intención de uso del PRÓXIMO móvil (varias a la vez).
+ * No describe el teléfono actual ni entra en el panel de aprovechamiento.
+ */
+export type NextIntent =
+  | 'fotos'
+  | 'video'
+  | 'juegos'
+  | 'whatsapp'
+  | 'bateria'
+  | 'almacenamiento'
 
 export type BadgeKind = 'medido' | 'estimado'
+
+export type DataSource = 'demo' | 'synthetic' | 'measured'
 
 export interface CategoryMeta {
   id: CategoryId
@@ -72,8 +84,14 @@ export interface Phone {
 export interface UserProfile {
   purchasePrice: number
   nextBudget: number
-  usageType: UsageType
+  /** Qué quiere del próximo móvil. Vacío = solo el uso medido, con margen. */
+  nextIntents: NextIntent[]
   utilization: UtilizationMap
+  /** Override badges when measured from the device */
+  badges?: Partial<Record<CategoryId, BadgeKind>>
+  dataSource?: DataSource
+  historyDays?: number
+  confidenceNote?: string
 }
 
 export interface Recommendation {

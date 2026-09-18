@@ -17,18 +17,6 @@ export const DEMO_UTILIZATION: UtilizationMap = {
 export const DEMO_PROFILE: UserProfile = {
   purchasePrice: 1000,
   nextBudget: 450,
-  usageType: 'equilibrado',
+  nextIntents: [],
   utilization: DEMO_UTILIZATION,
 }
-
-export const USAGE_LABELS = {
-  ligero: 'Ligero',
-  equilibrado: 'Equilibrado',
-  'gaming-foto': 'Gaming / Foto',
-} as const
-
-export const USAGE_HINTS = {
-  ligero: 'Llamadas, redes y poco mas',
-  equilibrado: 'Uso diario variado',
-  'gaming-foto': 'Juegos exigentes o fotografia',
-} as const
