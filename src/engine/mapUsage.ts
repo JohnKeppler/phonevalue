@@ -1,4 +1,4 @@
-import type { BadgeKind, CategoryId, UtilizationMap, UsageType } from './types'
+import type { BadgeKind, CategoryId, UtilizationMap } from './types'
 import type {
   DeviceSignals,
   PackageUsageRow,
@@ -64,12 +64,13 @@ function hoursToUtil(hoursPerDay: number, softCap: number): number {
 
 /**
  * Maps UsageStats + storage + signals → category utilizations for the %/€ engine.
+ * Las intenciones del próximo móvil NO entran aquí: el panel del teléfono
+ * actual solo refleja lo medido (y lo estimado a partir de esas señales).
  */
 export function mapUsageToUtilization(
   summary: UsageSummary,
   storage: StorageInfo | null,
   signals: DeviceSignals | null,
-  usageType: UsageType,
 ): MeasuredProfileParts {
   const historyDays = Math.max(1, Math.round(summary.historyDays * 10) / 10)
   const dayDivisor = Math.max(1, summary.historyDays)
@@ -91,17 +92,14 @@ export function mapUsageToUtilization(
   const softH = msToHoursPerDay(bucketMs.software ?? 0)
   const totalH = msToHoursPerDay(summary.totalForegroundMs)
 
-  const typeBoost =
-    usageType === 'ligero' ? 0.9 : usageType === 'gaming-foto' ? 1.1 : 1
-
   const utilization: UtilizationMap = {
-    pantalla: hoursToUtil(pantallaH * typeBoost, 6),
-    camara: hoursToUtil(camaraH * typeBoost, 0.5),
-    audio: hoursToUtil(audioH * typeBoost, 2),
-    soc: hoursToUtil((socH + totalH * 0.15) * typeBoost, 3),
-    conectividad: hoursToUtil(connH * typeBoost, 2),
-    sensores: hoursToUtil(sensH * typeBoost, 0.4),
-    software: hoursToUtil((softH + totalH * 0.1) * typeBoost, 1.5),
+    pantalla: hoursToUtil(pantallaH, 6),
+    camara: hoursToUtil(camaraH, 0.5),
+    audio: hoursToUtil(audioH, 2),
+    soc: hoursToUtil(socH + totalH * 0.15, 3),
+    conectividad: hoursToUtil(connH, 2),
+    sensores: hoursToUtil(sensH, 0.4),
+    software: hoursToUtil(softH + totalH * 0.1, 1.5),
     // Storage from StatFs when available
     storage: storage
       ? clamp(Math.round(storage.usedPercent * 0.95), 8, 95)

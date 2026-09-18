@@ -80,10 +80,10 @@ cd android && ./gradlew assembleDebug
 
 ## Qué incluye (UI)
 
-1. **Onboarding** — precio, presupuesto, tipo de uso; en Android: **Leer datos del teléfono**; fallback demo.  
-2. **Dashboard** — S%, € aprovechados/desperdiciados, 10 categorías con badges.  
+1. **Onboarding** — precio y presupuesto (campos de texto); intenciones del **próximo** móvil (Fotos, Vídeo, Juegos, WhatsApp / redes, Batería, Almacenamiento). En Android: **Leer datos del teléfono** (UsageStats). Las intenciones no alteran la medición. Fallback demo.  
+2. **Dashboard** — S%, € aprovechados/desperdiciados. El desglose de las 10 categorías se ve en **barras**, **tarta** o **mosaico** (por defecto barras).  
 3. **Detalle de categoría** — modal con nota de cálculo.  
-4. **Recomendaciones** — top 3 del catálogo local.  
+4. **Recomendaciones** — cantidad (5, 10 o un número), filtro de precio y de marcas en vivo. Al tocar un móvil: su precio, los euros de ese precio que se desperdiciarían, y las características (aprovechamiento por categoría, no planteadas como desperdicio).  
 5. **Transparencia** — medido vs demo / estimado.
 
 ## Motor

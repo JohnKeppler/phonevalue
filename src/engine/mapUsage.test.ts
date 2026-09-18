@@ -29,7 +29,6 @@ describe('mapUsageToUtilization', () => {
       summary,
       { totalBytes: 100, freeBytes: 40, usedBytes: 60, usedPercent: 60 },
       { batteryPercent: 70, networkTransport: 'wifi' },
-      'equilibrado',
     )
     expect(result.dataSource).toBe('measured')
     expect(result.historyDays).toBe(7)

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
-import type { UsageType, UserProfile } from '../engine/types'
-import { DEMO_PROFILE, USAGE_HINTS, USAGE_LABELS } from '../data/demo'
+import { useEffect, useState, type FormEvent } from 'react'
+import type { NextIntent, UserProfile } from '../engine/types'
+import { DEMO_PROFILE } from '../data/demo'
+import { INTENT_OPTIONS } from '../data/intents'
 import { isNativeAndroid, PhoneUsage } from '../native/phoneUsage'
 import { mapUsageToUtilization } from '../engine/mapUsage'
 
@@ -11,7 +12,7 @@ interface Props {
 export function Onboarding({ onComplete }: Props) {
   const [priceText, setPriceText] = useState('400')
   const [budgetText, setBudgetText] = useState('250')
-  const [usage, setUsage] = useState<UsageType>('equilibrado')
+  const [intents, setIntents] = useState<NextIntent[]>([])
   const [native, setNative] = useState(false)
   const [usageGranted, setUsageGranted] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
@@ -35,30 +36,27 @@ export function Onboarding({ onComplete }: Props) {
     return Math.min(2500, Math.max(50, n))
   }
 
+  function toggleIntent(id: NextIntent) {
+    setIntents((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }
+
   function loadDemo() {
     onComplete({ ...DEMO_PROFILE, dataSource: 'demo' })
   }
 
-  function submit(e: React.FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault()
     const price = parseEuros(priceText, 400)
     const budget = parseEuros(budgetText, 250)
     setPriceText(String(price))
     setBudgetText(String(budget))
-    const base = DEMO_PROFILE.utilization
-    const factor =
-      usage === 'ligero' ? 0.85 : usage === 'gaming-foto' ? 1.15 : 1
-    const utilization = Object.fromEntries(
-      Object.entries(base).map(([k, v]) => [
-        k,
-        Math.min(95, Math.round(v * factor)),
-      ]),
-    )
     onComplete({
       purchasePrice: price,
       nextBudget: budget,
-      usageType: usage,
-      utilization,
+      nextIntents: intents,
+      utilization: { ...DEMO_PROFILE.utilization },
       dataSource: 'synthetic',
     })
   }
@@ -106,12 +104,7 @@ export function Onboarding({ onComplete }: Props) {
         PhoneUsage.getDeviceSignals().catch(() => null),
       ])
 
-      const measured = mapUsageToUtilization(
-        summary,
-        storage,
-        signals,
-        usage,
-      )
+      const measured = mapUsageToUtilization(summary, storage, signals)
 
       const price = parseEuros(priceText, 400)
       const budget = parseEuros(budgetText, 250)
@@ -121,7 +114,7 @@ export function Onboarding({ onComplete }: Props) {
       onComplete({
         purchasePrice: price,
         nextBudget: budget,
-        usageType: usage,
+        nextIntents: intents,
         utilization: measured.utilization,
         badges: measured.badges,
         dataSource: 'measured',
@@ -188,27 +181,33 @@ export function Onboarding({ onComplete }: Props) {
         </label>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-slate-300">
-            Tipo de uso
+          <legend className="mb-1 text-sm font-medium text-slate-300">
+            Tipo de uso del próximo móvil
           </legend>
-          <div className="grid gap-2">
-            {(Object.keys(USAGE_LABELS) as UsageType[]).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setUsage(key)}
-                className={`rounded-xl border px-4 py-3 text-left transition ${
-                  usage === key
-                    ? 'border-brand-500 bg-brand-600/20 shadow-inner'
-                    : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                }`}
-              >
-                <div className="font-semibold text-white">
-                  {USAGE_LABELS[key]}
-                </div>
-                <div className="text-xs text-slate-400">{USAGE_HINTS[key]}</div>
-              </button>
-            ))}
+          <p className="mb-2 text-xs text-slate-500">
+            Puedes marcar varios. No cambia la medición de tu móvil actual: solo
+            ordena las recomendaciones. Si no marcas nada, seguimos tu uso, con
+            un poco de margen.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {INTENT_OPTIONS.map((opt) => {
+              const on = intents.includes(opt.id)
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleIntent(opt.id)}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                    on
+                      ? 'border-brand-500 bg-brand-600/25 text-white'
+                      : 'border-slate-600 bg-slate-800/60 text-slate-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
           </div>
         </fieldset>
 
