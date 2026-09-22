@@ -3,9 +3,36 @@ import type { CategoryResult } from '../engine/types'
 interface Props {
   category: CategoryResult
   onClose: () => void
+  /** Raw storage bytes when category is Almacenamiento and measured */
+  storageUsedBytes?: number
+  storageTotalBytes?: number
 }
 
-export function CategoryDetail({ category, onClose }: Props) {
+function formatGb(bytes: number): string {
+  // Decimal GB (same order of magnitude as Android Settings)
+  const gb = bytes / (1000 * 1000 * 1000)
+  if (gb >= 100) return gb.toFixed(0)
+  if (gb >= 10) return gb.toFixed(1)
+  return gb.toFixed(2)
+}
+
+export function CategoryDetail({
+  category,
+  onClose,
+  storageUsedBytes,
+  storageTotalBytes,
+}: Props) {
+  const showStorageBytes =
+    category.id === 'storage' &&
+    category.badge === 'medido' &&
+    storageUsedBytes != null &&
+    storageTotalBytes != null &&
+    storageTotalBytes > 0
+
+  const occupiedPct = showStorageBytes
+    ? Math.round((100 * storageUsedBytes!) / storageTotalBytes!)
+    : null
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
@@ -48,6 +75,20 @@ export function CategoryDetail({ category, onClose }: Props) {
           <Stat label="Uso" value={`${category.utilization}%`} />
           <Stat label="Asignado" value={`${category.assignedEuro} €`} />
         </div>
+
+        {showStorageBytes && (
+          <p className="mb-4 rounded-xl border border-slate-600/80 bg-slate-900/50 px-3 py-2 text-sm text-slate-200">
+            Ocupado:{' '}
+            <span className="font-semibold text-white">
+              {formatGb(storageUsedBytes!)} GB
+            </span>{' '}
+            de{' '}
+            <span className="font-semibold text-white">
+              {formatGb(storageTotalBytes!)} GB
+            </span>{' '}
+            ({occupiedPct} %)
+          </p>
+        )}
 
         <div className="mb-4 flex justify-between rounded-xl bg-slate-900/60 px-3 py-2 text-sm">
           <span className="text-emerald-400">

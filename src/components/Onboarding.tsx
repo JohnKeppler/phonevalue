@@ -114,13 +114,26 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
         return
       }
 
+      let storageFailed = false
       const [summary, storage, signals] = await Promise.all([
         PhoneUsage.getUsageSummary({ rangeDays: 30 }),
-        PhoneUsage.getStorageInfo().catch(() => null),
+        PhoneUsage.getStorageInfo().catch(() => {
+          storageFailed = true
+          return null
+        }),
         PhoneUsage.getDeviceSignals().catch(() => null),
       ])
 
       const measured = mapUsageToUtilization(summary, storage, signals)
+
+      let confidenceNote = measured.confidenceNote
+      if (storageFailed || !storage) {
+        confidenceNote =
+          `${confidenceNote} Almacenamiento no se pudo leer; esa categoría queda estimada.`
+        setStatus(
+          'Aviso: no se pudo leer el almacenamiento. El resto se midió; Almacenamiento queda estimado.',
+        )
+      }
 
       const price = parseEuros(priceText, 400)
       const budget = parseEuros(budgetText, 250)
@@ -135,7 +148,9 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
         badges: measured.badges,
         dataSource: 'measured',
         historyDays: measured.historyDays,
-        confidenceNote: measured.confidenceNote,
+        confidenceNote,
+        storageUsedBytes: measured.storageUsedBytes,
+        storageTotalBytes: measured.storageTotalBytes,
       })
     } catch (e) {
       const msg =

@@ -12,6 +12,8 @@ import android.os.Build
 import android.os.Environment
 import android.os.Process
 import android.os.StatFs
+import android.os.storage.StorageManager
+import java.util.UUID
 import android.provider.Settings
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
@@ -120,24 +122,114 @@ class PhoneUsagePlugin : Plugin() {
         call.resolve(ret)
     }
 
+    /**
+     * Storage totals aligned with Android Settings (internal / primary volume).
+     * Prefers StorageManager.getTotalBytes/getFreeBytes (API 26+) for the
+     * primary user-visible volume; falls back to StatFs on /data.
+     */
     @PluginMethod
     fun getStorageInfo(call: PluginCall) {
         try {
-            val path = Environment.getDataDirectory()
-            val stat = StatFs(path.path)
-            val blockSize = stat.blockSizeLong
-            val total = stat.blockCountLong * blockSize
-            val free = stat.availableBlocksLong * blockSize
-            val used = total - free
+            var total = 0L
+            var free = 0L
+            var source = "statfs"
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+                    val uuid = resolvePrimaryStorageUuid(sm)
+                    val smTotal = sm.getTotalBytes(uuid)
+                    val smFree = sm.getFreeBytes(uuid)
+                    if (smTotal > 0L) {
+                        total = smTotal
+                        free = smFree.coerceIn(0L, smTotal)
+                        source = "storage_manager"
+                    }
+                } catch (_: Exception) {
+                    // fall through to StatFs
+                }
+            }
+
+            if (total <= 0L) {
+                val path = Environment.getDataDirectory()
+                val stat = StatFs(path.path)
+                val blockSize = stat.blockSizeLong
+                total = stat.blockCountLong * blockSize
+                free = stat.availableBlocksLong * blockSize
+                source = "statfs"
+            }
+
+            val used = (total - free).coerceAtLeast(0L)
             val ret = JSObject()
             ret.put("totalBytes", total)
             ret.put("freeBytes", free)
             ret.put("usedBytes", used)
             ret.put("usedPercent", if (total > 0) (100.0 * used / total) else 0.0)
+            ret.put("source", source)
+            // Optional marketed-ish total (nearest power-of-two GB) when usable differs
+            val marketed = estimateMarketedTotalBytes(total)
+            if (marketed != null && marketed != total) {
+                ret.put("marketedTotalBytes", marketed)
+            }
             call.resolve(ret)
         } catch (e: Exception) {
             call.reject("STORAGE_ERROR", e.message, e)
         }
+    }
+
+    /**
+     * UUID for the primary internal volume (what Settings labels as almacenamiento interno).
+     * When several volumes exist, prefer primary; else the larger non-removable volume.
+     */
+    private fun resolvePrimaryStorageUuid(sm: StorageManager): UUID {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return StorageManager.UUID_DEFAULT
+        }
+        val volumes = sm.storageVolumes
+        val primary = volumes.firstOrNull { it.isPrimary }
+        if (primary != null) {
+            return uuidFromVolume(primary.uuid)
+        }
+        // No explicit primary: prefer non-removable, then largest estimated via StorageManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var bestUuid = StorageManager.UUID_DEFAULT
+            var bestTotal = -1L
+            for (vol in volumes) {
+                if (vol.isRemovable) continue
+                val u = uuidFromVolume(vol.uuid)
+                try {
+                    val t = sm.getTotalBytes(u)
+                    if (t > bestTotal) {
+                        bestTotal = t
+                        bestUuid = u
+                    }
+                } catch (_: Exception) {
+                    // skip
+                }
+            }
+            if (bestTotal > 0L) return bestUuid
+        }
+        return StorageManager.UUID_DEFAULT
+    }
+
+    private fun uuidFromVolume(uuidStr: String?): UUID {
+        if (uuidStr.isNullOrBlank()) return StorageManager.UUID_DEFAULT
+        return try {
+            UUID.fromString(uuidStr)
+        } catch (_: Exception) {
+            StorageManager.UUID_DEFAULT
+        }
+    }
+
+    /** Rough marketed capacity (e.g. 256 GB) when usable capacity is lower. */
+    private fun estimateMarketedTotalBytes(usableTotal: Long): Long? {
+        if (usableTotal <= 0L) return null
+        val gb = usableTotal.toDouble() / (1000.0 * 1000.0 * 1000.0) // decimal GB (Settings-ish)
+        val marketedGb = listOf(16, 32, 64, 128, 256, 512, 1024)
+            .firstOrNull { it >= gb * 0.92 && it <= gb * 1.35 }
+            ?: return null
+        val marketed = marketedGb.toLong() * 1000L * 1000L * 1000L
+        return if (kotlin.math.abs(marketed - usableTotal) > usableTotal * 0.03) marketed else null
     }
 
     @PluginMethod

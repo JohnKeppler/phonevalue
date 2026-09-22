@@ -192,7 +192,12 @@ export function Dashboard({
       </div>
 
       {selected && (
-        <CategoryDetail category={selected} onClose={() => setSelected(null)} />
+        <CategoryDetail
+          category={selected}
+          onClose={() => setSelected(null)}
+          storageUsedBytes={profile.storageUsedBytes}
+          storageTotalBytes={profile.storageTotalBytes}
+        />
       )}
     </div>
   )

@@ -27,7 +27,7 @@ export const CATEGORIES: CategoryMeta[] = [
     label: 'Almacenamiento',
     weight: 8,
     howCalculated:
-      'Espacio ocupado vs capacidad total. Mucho almacenamiento vacio = euros desaprovechados.',
+      'Espacio ocupado vs capacidad usable (como en Ajustes). Mucho almacenamiento vacío = euros desaprovechados.',
   },
   {
     id: 'ram',

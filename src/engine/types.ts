@@ -92,6 +92,9 @@ export interface UserProfile {
   dataSource?: DataSource
   historyDays?: number
   confidenceNote?: string
+  /** Raw storage bytes from device (when measured) for UI verification */
+  storageUsedBytes?: number
+  storageTotalBytes?: number
 }
 
 export interface Recommendation {

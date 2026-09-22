@@ -22,6 +22,10 @@ export interface StorageInfo {
   freeBytes: number
   usedBytes: number
   usedPercent: number
+  /** storage_manager | statfs — how totals were obtained */
+  source?: string
+  /** Optional marketed-ish total when usable capacity differs (e.g. 256 GB) */
+  marketedTotalBytes?: number
 }
 
 export interface DeviceSignals {

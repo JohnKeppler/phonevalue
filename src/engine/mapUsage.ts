@@ -12,6 +12,8 @@ export interface MeasuredProfileParts {
   historyDays: number
   confidenceNote: string
   dataSource: 'measured'
+  storageUsedBytes?: number
+  storageTotalBytes?: number
 }
 
 /** Heuristic package → category buckets (on-device only; never uploaded). */
@@ -100,9 +102,9 @@ export function mapUsageToUtilization(
     conectividad: hoursToUtil(connH, 2),
     sensores: hoursToUtil(sensH, 0.4),
     software: hoursToUtil(softH + totalH * 0.1, 1.5),
-    // Storage from StatFs when available
+    // Storage: used% as reported by Settings-aligned StorageManager/StatFs
     storage: storage
-      ? clamp(Math.round(storage.usedPercent * 0.95), 8, 95)
+      ? clamp(Math.round(storage.usedPercent), 1, 99)
       : 30,
     // RAM / battery / remaining estimated from signals + total use
     ram: clamp(Math.round(20 + totalH * 8), 15, 80),
@@ -149,5 +151,11 @@ export function mapUsageToUtilization(
     historyDays,
     confidenceNote,
     dataSource: 'measured',
+    ...(storage
+      ? {
+          storageUsedBytes: storage.usedBytes,
+          storageTotalBytes: storage.totalBytes,
+        }
+      : {}),
   }
 }
