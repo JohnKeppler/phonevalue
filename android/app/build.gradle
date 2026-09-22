@@ -8,14 +8,28 @@ android {
         applicationId "com.valormovil.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "0.2.1"
+        versionCode 4
+        versionName "0.2.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Stable debug signing for local + CI sideload APKs (NOT Play Store release).
+    // Keystore: android/app/valor-movil-debug.keystore (committed).
+    // Credentials (typical Android debug): storePassword=android, keyPassword=android, keyAlias=androidkey
+    signingConfigs {
+        debug {
+            storeFile file('valor-movil-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androidkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
