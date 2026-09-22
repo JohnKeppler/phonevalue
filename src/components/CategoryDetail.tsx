@@ -54,7 +54,7 @@ export function CategoryDetail({ category, onClose }: Props) {
             Aprovechado: {category.usedEuro} €
           </span>
           <span className="text-orange-400">
-            Desperdicio: {category.wastedEuro} €
+            Desperdiciado: {category.wastedEuro} €
           </span>
         </div>
 

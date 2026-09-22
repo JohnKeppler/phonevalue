@@ -112,7 +112,7 @@ function BarView({ categories, onSelect }: Props) {
             </div>
             <div className="flex justify-between text-xs text-slate-400">
               <span>{cat.usedEuro} € usados</span>
-              <span>{cat.wastedEuro} € desperdicio</span>
+              <span>{cat.wastedEuro} € desperdiciados</span>
             </div>
           </button>
         </li>
@@ -146,7 +146,7 @@ function PieView({ categories, onSelect }: Props) {
             onClick={() => onSelect(cat)}
           >
             <title>
-              {cat.label}: {cat.utilization}% · {cat.wastedEuro} € desperdicio
+              {cat.label}: {cat.utilization}% · {cat.wastedEuro} € desperdiciados
             </title>
           </path>
         ))}
@@ -219,7 +219,7 @@ function MosaicView({ categories, onSelect }: Props) {
               <span className="text-sm font-semibold">%</span>
             </span>
             <span className="mt-1 text-[11px] text-white/90">
-              {cat.wastedEuro} € desperdicio
+              {cat.wastedEuro} € desperdiciados
             </span>
           </button>
         </li>

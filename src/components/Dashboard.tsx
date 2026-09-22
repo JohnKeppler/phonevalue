@@ -75,13 +75,13 @@ export function Dashboard({ profile, onShowRecs, onReset }: Props) {
 
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-emerald-500/10 px-3 py-3 ring-1 ring-emerald-500/30">
-            <p className="text-xs text-emerald-400/80">€ aprovechados</p>
+            <p className="text-xs text-emerald-400/80">Aprovechados</p>
             <p className="text-xl font-bold text-emerald-300">
               {Math.round(result.totalUsedEuro)} €
             </p>
           </div>
           <div className="rounded-xl bg-orange-500/10 px-3 py-3 ring-1 ring-orange-500/30">
-            <p className="text-xs text-orange-400/80">€ desperdiciados</p>
+            <p className="text-xs text-orange-400/80">Desperdiciados</p>
             <p className="text-xl font-bold text-orange-300">
               {Math.round(result.totalWastedEuro)} €
             </p>

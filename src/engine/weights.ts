@@ -13,14 +13,14 @@ export const CATEGORIES: CategoryMeta[] = [
     label: 'Pantalla',
     weight: 18,
     howCalculated:
-      'Basado en horas de pantalla, brillo medio y tasa de refresco usada. Un panel 120 Hz poco aprovechado genera desperdicio.',
+      'Basado en horas de pantalla, brillo medio y tasa de refresco usada. Un panel 120 Hz poco aprovechado queda desperdiciado.',
   },
   {
     id: 'camara',
     label: 'Cámara',
     weight: 18,
     howCalculated:
-      'Frecuencia de fotos/video y modos avanzados usados. Sensores extras sin uso cuentan como desperdicio.',
+      'Frecuencia de fotos/video y modos avanzados usados. Sensores extras sin uso quedan desperdiciados.',
   },
   {
     id: 'storage',

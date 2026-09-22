@@ -346,7 +346,7 @@ function PhonePanel({
                 onClick={onHideSpecs}
                 className="mb-3 text-sm text-brand-400"
               >
-                ← Precio y desperdicio
+                ← Precio y desperdiciado
               </button>
               <h3 className="text-base font-semibold text-white">
                 Características
@@ -387,7 +387,7 @@ function PhonePanel({
 
               <div className="mt-4 rounded-2xl bg-orange-500/10 px-4 py-4 text-center ring-1 ring-orange-500/40">
                 <p className="text-xs font-medium uppercase tracking-wide text-orange-300/90">
-                  De ese precio se desperdiciarían
+                  De ese precio quedarían desperdiciados
                 </p>
                 <p className="mt-1 text-5xl font-black tabular-nums text-orange-300">
                   {Math.round(waste)} €

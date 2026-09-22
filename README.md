@@ -83,7 +83,7 @@ cd android && ./gradlew assembleDebug
 1. **Onboarding** — precio y presupuesto (campos de texto); intenciones del **próximo** móvil (Fotos, Vídeo, Juegos, WhatsApp / redes, Batería, Almacenamiento). En Android: **Leer datos del teléfono** (UsageStats). Las intenciones no alteran la medición. Fallback demo.  
 2. **Dashboard** — S%, € aprovechados/desperdiciados. El desglose de las 10 categorías se ve en **barras**, **tarta** o **mosaico** (por defecto barras).  
 3. **Detalle de categoría** — modal con nota de cálculo.  
-4. **Recomendaciones** — cantidad (5, 10 o un número), filtro de precio y de marcas en vivo. Al tocar un móvil: su precio, los euros de ese precio que se desperdiciarían, y las características (aprovechamiento por categoría, no planteadas como desperdicio).  
+4. **Recomendaciones** — cantidad (5, 10 o un número), filtro de precio y de marcas en vivo. Al tocar un móvil: su precio, los euros de ese precio que quedarían desperdiciados, y las características (aprovechamiento por categoría).  
 5. **Transparencia** — medido vs demo / estimado.
 
 ## Motor
@@ -107,7 +107,7 @@ Fórmulas:
 
 - `€_asignados = P × w/100`
 - `€_aprov = asignados × u/100`
-- `desperdicio = asignados − aprov`
+- `desperdiciado = asignados − aprov`
 - `S = 100 × Σ aprov / P`
 
 Perfil demo `P = 1000 €` → ~**310 €** aprovechados / ~**690 €** desperdiciados / ~**31 %**.
