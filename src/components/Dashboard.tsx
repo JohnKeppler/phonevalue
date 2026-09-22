@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CategoryResult, UserProfile } from '../engine/types'
 import { calculateUtilization } from '../engine/calculate'
 import { budgetEnoughSentence } from '../engine/budgetEnough'
@@ -9,6 +9,7 @@ import { APP_VERSION, RELEASES_LATEST_URL } from '../version'
 import { CategoryDetail } from './CategoryDetail'
 import { TransparencyNote } from './TransparencyNote'
 import { UsageCharts } from './UsageCharts'
+import { pushBackHandler } from '../native/backStack'
 
 interface Props {
   profile: UserProfile
@@ -34,6 +35,14 @@ export function Dashboard({
   )
   const [selected, setSelected] = useState<CategoryResult | null>(null)
   const intentText = profile.nextIntents.map(intentLabel).join(' · ')
+
+  useEffect(() => {
+    if (!selected) return
+    return pushBackHandler(() => {
+      setSelected(null)
+      return true
+    })
+  }, [selected])
 
   const enoughSentence = useMemo(
     () =>
@@ -68,14 +77,16 @@ export function Dashboard({
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pb-28 pt-6">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-brand-400">
-            ValorMóvil
+    <div className="app-screen mx-auto max-w-lg px-4 pb-36">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-400/90">
+            Valor Móvil
           </p>
-          <h1 className="text-xl font-bold text-white">Tu aprovechamiento</h1>
-          <p className="text-xs text-slate-400">
+          <h1 className="mt-1 text-2xl font-bold leading-tight text-white">
+            Tu aprovechamiento
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             {profile.purchasePrice} €
             {profile.dataSource === 'measured'
               ? ' · medido'
@@ -86,23 +97,23 @@ export function Dashboard({
                   : ''}
           </p>
           {intentText && (
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               Próximo móvil: {intentText}
             </p>
           )}
         </div>
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex shrink-0 flex-col items-stretch gap-2">
           <button
             type="button"
             onClick={onRemeasure}
-            className="rounded-lg px-2 py-1 text-xs text-brand-300 hover:bg-slate-700 hover:text-white"
+            className="min-h-11 rounded-xl border border-brand-500/40 bg-brand-600/15 px-3 py-2.5 text-sm font-semibold text-brand-100 hover:bg-brand-600/30 active:scale-[0.98]"
           >
             Volver a medir
           </button>
           <button
             type="button"
             onClick={onReset}
-            className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-700 hover:text-white"
+            className="min-h-11 rounded-xl border border-slate-600 bg-slate-800/80 px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white active:scale-[0.98]"
           >
             Reiniciar
           </button>
@@ -168,12 +179,12 @@ export function Dashboard({
         </p>
       </footer>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 py-3 backdrop-blur">
+      <div className="app-sticky-footer fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 pt-3 backdrop-blur">
         <div className="mx-auto max-w-lg">
           <button
             type="button"
             onClick={onShowRecs}
-            className="w-full rounded-xl bg-brand-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-500 active:scale-[0.98]"
+            className="min-h-12 w-full rounded-xl bg-brand-600 px-3 py-3.5 text-base font-semibold leading-snug text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-500 active:scale-[0.98]"
           >
             Ver móviles que encajan · hasta {profile.nextBudget} €
           </button>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { NextIntent, Phone, Recommendation, UserProfile } from '../engine/types'
 import {
   candidateCategoryUtilization,
@@ -12,6 +12,7 @@ import { CATALOG_PRICE_DISCLAIMER, PHONE_CATALOG } from '../data/catalog'
 import { INTENT_OPTIONS } from '../data/intents'
 import { TransparencyNote } from './TransparencyNote'
 import { CompareView } from './CompareView'
+import { pushBackHandler } from '../native/backStack'
 
 interface Props {
   profile: UserProfile
@@ -115,13 +116,34 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
     setShowSpecs(false)
   }
 
+  // Android back: specs → panel → compare → list (handled by App → dashboard)
+  useEffect(() => {
+    if (!showCompare) return
+    return pushBackHandler(() => {
+      setShowCompare(false)
+      return true
+    })
+  }, [showCompare])
+
+  useEffect(() => {
+    if (!selected) return
+    return pushBackHandler(() => {
+      if (showSpecs) {
+        setShowSpecs(false)
+        return true
+      }
+      setSelected(null)
+      return true
+    })
+  }, [selected, showSpecs])
+
   return (
-    <div className="mx-auto max-w-lg px-4 pb-28 pt-6">
+    <div className="app-screen mx-auto max-w-lg px-4 pb-36">
       <header className="mb-4">
         <button
           type="button"
           onClick={onBack}
-          className="mb-3 text-sm text-brand-400 hover:text-brand-300"
+          className="mb-3 inline-flex min-h-11 items-center rounded-xl px-2 py-2 text-sm font-semibold text-brand-300 hover:bg-slate-800 hover:text-brand-200"
         >
           ← Volver al panel
         </button>
@@ -323,19 +345,19 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
       </div>
 
       {compareIds.length >= 2 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 py-3 backdrop-blur">
+        <div className="app-sticky-footer fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 pt-3 backdrop-blur">
           <div className="mx-auto flex max-w-lg gap-2">
             <button
               type="button"
               onClick={() => setShowCompare(true)}
-              className="flex-1 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white"
+              className="min-h-12 flex-1 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white"
             >
               Comparar {compareIds.length} móviles
             </button>
             <button
               type="button"
               onClick={() => setCompareIds([])}
-              className="rounded-xl border border-slate-600 px-3 py-3 text-sm text-slate-300"
+              className="min-h-12 rounded-xl border border-slate-600 px-3 py-3 text-sm text-slate-300"
             >
               Limpiar
             </button>

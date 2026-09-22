@@ -151,7 +151,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-lg flex-col px-4 pb-10 pt-8">
+    <div className="app-screen mx-auto flex min-h-dvh max-w-lg flex-col px-4 pb-[max(2.5rem,var(--app-pad-bottom))]">
       <header className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 shadow-lg shadow-brand-600/30">
           <span className="text-2xl" aria-hidden>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NextIntent, UserProfile } from './engine/types'
 import { Onboarding } from './components/Onboarding'
 import { Dashboard } from './components/Dashboard'
@@ -8,6 +8,7 @@ import {
   loadProfile,
   saveProfile,
 } from './storage/profileStore'
+import { initAndroidChrome } from './native/androidChrome'
 
 type Screen = 'loading' | 'onboarding' | 'dashboard' | 'recommendations'
 
@@ -15,6 +16,10 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('loading')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [savedOffer, setSavedOffer] = useState<UserProfile | null>(null)
+  const screenRef = useRef(screen)
+  screenRef.current = screen
+  const setScreenRef = useRef(setScreen)
+  setScreenRef.current = setScreen
 
   useEffect(() => {
     let cancelled = false
@@ -30,6 +35,25 @@ export default function App() {
     })()
     return () => {
       cancelled = true
+    }
+  }, [])
+
+  // Android hardware/gesture back: nested handlers first, then screen stack.
+  useEffect(() => {
+    let remove: (() => void) | undefined
+    void initAndroidChrome(() => {
+      const current = screenRef.current
+      if (current === 'recommendations') {
+        setScreenRef.current('dashboard')
+        return true
+      }
+      // Root screens (dashboard / onboarding / loading) → exit
+      return false
+    }).then((cleanup) => {
+      remove = cleanup
+    })
+    return () => {
+      remove?.()
     }
   }, [])
 
@@ -72,7 +96,7 @@ export default function App() {
 
   if (screen === 'loading') {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-slate-400">
+      <div className="app-screen flex min-h-dvh items-center justify-center text-sm text-slate-400">
         Cargando…
       </div>
     )

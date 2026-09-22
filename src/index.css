@@ -32,3 +32,24 @@ body {
 #root {
   min-height: 100dvh;
 }
+
+/*
+ * Safe areas for Capacitor Android (edge-to-edge / status + nav bars).
+ * Extra fixed padding covers devices where env(safe-area-*) is 0.
+ */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --app-pad-top: calc(var(--sat) + 14px);
+  --app-pad-bottom: calc(var(--sab) + 28px);
+}
+
+.app-screen {
+  padding-top: max(1.75rem, var(--app-pad-top));
+}
+
+.app-sticky-footer {
+  padding-bottom: max(1.5rem, var(--app-pad-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
