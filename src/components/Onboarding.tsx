@@ -4,20 +4,36 @@ import { DEMO_PROFILE } from '../data/demo'
 import { INTENT_OPTIONS } from '../data/intents'
 import { isNativeAndroid, PhoneUsage } from '../native/phoneUsage'
 import { mapUsageToUtilization } from '../engine/mapUsage'
+import { APP_VERSION, RELEASES_LATEST_URL } from '../version'
 
 interface Props {
   onComplete: (profile: UserProfile) => void
+  savedProfile?: UserProfile | null
+  onRestore?: () => void
 }
 
-export function Onboarding({ onComplete }: Props) {
-  const [priceText, setPriceText] = useState('400')
-  const [budgetText, setBudgetText] = useState('250')
-  const [intents, setIntents] = useState<NextIntent[]>([])
+export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
+  const [priceText, setPriceText] = useState(
+    savedProfile ? String(savedProfile.purchasePrice) : '400',
+  )
+  const [budgetText, setBudgetText] = useState(
+    savedProfile ? String(savedProfile.nextBudget) : '250',
+  )
+  const [intents, setIntents] = useState<NextIntent[]>(
+    savedProfile?.nextIntents ?? [],
+  )
   const [native, setNative] = useState(false)
   const [usageGranted, setUsageGranted] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!savedProfile) return
+    setPriceText(String(savedProfile.purchasePrice))
+    setBudgetText(String(savedProfile.nextBudget))
+    setIntents(savedProfile.nextIntents ?? [])
+  }, [savedProfile])
 
   useEffect(() => {
     const isNative = isNativeAndroid()
@@ -151,6 +167,35 @@ export function Onboarding({ onComplete }: Props) {
         </p>
       </header>
 
+      {savedProfile && onRestore && (
+        <div className="mb-5 rounded-xl border border-brand-500/40 bg-brand-600/10 p-4">
+          <p className="text-sm font-semibold text-brand-100">
+            Tienes un perfil guardado
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {savedProfile.purchasePrice} € ·{' '}
+            {savedProfile.dataSource === 'measured'
+              ? 'medido'
+              : savedProfile.dataSource === 'demo'
+                ? 'demo'
+                : 'sintético'}
+            {savedProfile.historyDays != null
+              ? ` · ${savedProfile.historyDays} días`
+              : ''}
+          </p>
+          <button
+            type="button"
+            onClick={onRestore}
+            className="mt-3 w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white"
+          >
+            Restaurar último perfil
+          </button>
+          <p className="mt-2 text-[11px] text-slate-500">
+            O mide de nuevo abajo («Leer datos del teléfono» / calcular).
+          </p>
+        </div>
+      )}
+
       <form onSubmit={submit} className="flex flex-1 flex-col gap-5">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-300">
@@ -280,6 +325,18 @@ export function Onboarding({ onComplete }: Props) {
               Android para leer UsageStats reales.
             </p>
           )}
+          <p className="pt-2 text-center text-[11px] text-slate-600">
+            ValorMóvil {APP_VERSION} ·{' '}
+            <button
+              type="button"
+              onClick={() =>
+                window.open(RELEASES_LATEST_URL, '_blank', 'noopener,noreferrer')
+              }
+              className="text-brand-400 hover:text-brand-300"
+            >
+              Buscar actualización
+            </button>
+          </p>
         </div>
       </form>
     </div>

@@ -58,7 +58,7 @@ git push
 1. Abre las Actions: https://github.com/JohnKeppler/phonevalue/actions  
    (tras publicar el workflow: `…/actions/workflows/android-apk.yml`)  
 2. Entra en la ejecución más reciente (o **Run workflow**).  
-3. Descarga el artefacto **`app-debug`** → dentro está `app-debug.apk`.  
+3. Descarga el artefacto **`app-debug`** → dentro está `app-debug.apk` (en releases: `ValorMovil-debug.apk`).  
 4. Copia el APK al móvil.  
 5. En Android: **Ajustes → Seguridad** (o Apps) → permite **instalar apps desconocidas** para el explorador/Archivos.  
 6. Instala `app-debug.apk` y ábrelo.  
@@ -80,11 +80,13 @@ cd android && ./gradlew assembleDebug
 
 ## Qué incluye (UI)
 
-1. **Onboarding** — precio y presupuesto (campos de texto); intenciones del **próximo** móvil (Fotos, Vídeo, Juegos, WhatsApp / redes, Batería, Almacenamiento). En Android: **Leer datos del teléfono** (UsageStats). Las intenciones no alteran la medición. Fallback demo.  
-2. **Dashboard** — S%, € aprovechados/desperdiciados. El desglose de las 10 categorías se ve en **barras**, **tarta** o **mosaico** (por defecto barras).  
+1. **Onboarding** — precio y presupuesto (campos de texto); intenciones del **próximo** móvil (Fotos, Vídeo, Juegos, WhatsApp / redes, Batería, Almacenamiento). En Android: **Leer datos del teléfono** (UsageStats). Las intenciones no alteran la medición. Fallback demo. Restaurar perfil guardado.  
+2. **Dashboard** — S%, € Aprovechados/Desperdiciados; frase «esto te basta» (~X € / por encima de Y €); bloque de **confianza** (días de historial, medido vs estimado, aviso si &lt;7 días o demo/sintético).  
 3. **Detalle de categoría** — modal con nota de cálculo.  
-4. **Recomendaciones** — cantidad (5, 10 o un número), filtro de precio y de marcas en vivo. Al tocar un móvil: su precio, los euros de ese precio que quedarían desperdiciados, y las características (aprovechamiento por categoría).  
-5. **Transparencia** — medido vs demo / estimado.
+4. **Recomendaciones** — cantidad, filtros en vivo, frase de presupuesto, comparar 2–3 móviles (precio, € desperdiciados, % por categoría). Precios del catálogo **orientativos** (no en vivo).  
+5. **Persistencia** — último perfil en localStorage; «Volver a medir» / «Leer datos otra vez».  
+6. **Actualización** — «Buscar actualización» abre la última release de GitHub; instalar el APK encima del anterior.  
+7. **Transparencia** — medido vs demo / estimado.
 
 ## Motor
 
@@ -124,7 +126,7 @@ Perfil demo `P = 1000 €` → ~**310 €** aprovechados / ~**690 €** desperdi
 ```
 src/
   engine/          # cálculo, pesos, recomendación, mapUsage
-  data/            # perfil demo + catálogo
+  data/            # perfil demo + catálogo (~38 móviles, precios orientativos UE)
   components/      # UI en español
   native/          # bridge Capacitor → PhoneUsage
 android/

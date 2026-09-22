@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
-import type { NextIntent, Recommendation, UserProfile } from '../engine/types'
+import type { NextIntent, Phone, Recommendation, UserProfile } from '../engine/types'
 import {
   candidateCategoryUtilization,
   candidateWastedEuro,
   recommendPhones,
 } from '../engine/recommend'
+import { budgetEnoughSentence } from '../engine/budgetEnough'
 import { CATEGORIES } from '../engine/weights'
 import { usageSentence } from '../engine/specs'
-import { PHONE_CATALOG } from '../data/catalog'
+import { CATALOG_PRICE_DISCLAIMER, PHONE_CATALOG } from '../data/catalog'
 import { INTENT_OPTIONS } from '../data/intents'
 import { TransparencyNote } from './TransparencyNote'
+import { CompareView } from './CompareView'
 
 interface Props {
   profile: UserProfile
@@ -25,6 +27,8 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
   const [excludeBrands, setExcludeBrands] = useState<string[]>([])
   const [selected, setSelected] = useState<Recommendation | null>(null)
   const [showSpecs, setShowSpecs] = useState(false)
+  const [compareIds, setCompareIds] = useState<string[]>([])
+  const [showCompare, setShowCompare] = useState(false)
 
   const brands = useMemo(() => {
     return [...new Set(PHONE_CATALOG.map((p) => p.brand))].sort((a, b) =>
@@ -58,6 +62,31 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
     ],
   )
 
+  const enoughSentence = useMemo(
+    () =>
+      budgetEnoughSentence(
+        profile.utilization,
+        PHONE_CATALOG,
+        profile.nextIntents,
+      ),
+    [profile.utilization, profile.nextIntents],
+  )
+
+  const comparePhones: Phone[] = useMemo(() => {
+    const byId = new Map(PHONE_CATALOG.map((p) => [p.id, p]))
+    return compareIds
+      .map((id) => byId.get(id))
+      .filter((p): p is Phone => p != null)
+  }, [compareIds])
+
+  function toggleCompare(id: string) {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id)
+      if (prev.length >= 3) return prev
+      return [...prev, id]
+    })
+  }
+
   function toggleIntent(id: NextIntent) {
     const has = profile.nextIntents.includes(id)
     onIntentsChange(
@@ -87,7 +116,7 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pb-10 pt-6">
+    <div className="mx-auto max-w-lg px-4 pb-28 pt-6">
       <header className="mb-4">
         <button
           type="button"
@@ -102,6 +131,10 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
           {profile.nextIntents.length > 0 ? ' y con lo que quieres del próximo móvil' : ''}.
           Se actualizan al momento.
         </p>
+        <p className="mt-3 rounded-xl border border-brand-500/30 bg-brand-600/10 px-3 py-2.5 text-sm leading-relaxed text-brand-100">
+          {enoughSentence}
+        </p>
+        <p className="mt-2 text-[11px] text-slate-500">{CATALOG_PRICE_DISCLAIMER}</p>
       </header>
 
       <section className="mb-5 space-y-4 rounded-2xl border border-slate-700/80 bg-slate-800/50 p-3">
@@ -229,13 +262,12 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
         </div>
       ) : (
         <ol className="space-y-3">
-          {recs.map((rec, i) => (
+          {recs.map((rec, i) => {
+            const inCompare = compareIds.includes(rec.phone.id)
+            const compareFull = compareIds.length >= 3 && !inCompare
+            return (
             <li key={rec.phone.id}>
-              <button
-                type="button"
-                onClick={() => openPhone(rec)}
-                className="w-full overflow-hidden rounded-2xl border border-slate-600/80 bg-slate-800/70 text-left shadow-lg transition hover:border-brand-500/50"
-              >
+              <div className="overflow-hidden rounded-2xl border border-slate-600/80 bg-slate-800/70 shadow-lg transition hover:border-brand-500/50">
                 <div className="flex items-center gap-2 border-b border-slate-700/80 bg-slate-900/40 px-4 py-2">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
                     {i + 1}
@@ -247,7 +279,11 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
                     Fit {Math.round(rec.fitScore)}%
                   </span>
                 </div>
-                <div className="p-4">
+                <button
+                  type="button"
+                  onClick={() => openPhone(rec)}
+                  className="w-full p-4 text-left"
+                >
                   <p className="text-xs text-slate-400">{rec.phone.brand}</p>
                   <h2 className="text-lg font-bold text-white">
                     {rec.phone.name}
@@ -258,16 +294,54 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
                   <p className="mt-2 text-xs text-brand-300">
                     Toca para ver precio y euros desperdiciados
                   </p>
+                </button>
+                <div className="border-t border-slate-700/60 px-4 py-2">
+                  <label className={`flex items-center gap-2 text-xs ${compareFull ? 'text-slate-600' : 'text-slate-300'}`}>
+                    <input
+                      type="checkbox"
+                      checked={inCompare}
+                      disabled={compareFull}
+                      onChange={() => toggleCompare(rec.phone.id)}
+                      className="rounded border-slate-500"
+                    />
+                    {inCompare
+                      ? 'En comparativa'
+                      : compareFull
+                        ? 'Máximo 3 móviles'
+                        : 'Añadir a comparar'}
+                  </label>
                 </div>
-              </button>
+              </div>
             </li>
-          ))}
+            )
+          })}
         </ol>
       )}
 
       <div className="mt-6">
         <TransparencyNote />
       </div>
+
+      {compareIds.length >= 2 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700/80 bg-slate-900/95 px-4 py-3 backdrop-blur">
+          <div className="mx-auto flex max-w-lg gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCompare(true)}
+              className="flex-1 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white"
+            >
+              Comparar {compareIds.length} móviles
+            </button>
+            <button
+              type="button"
+              onClick={() => setCompareIds([])}
+              className="rounded-xl border border-slate-600 px-3 py-3 text-sm text-slate-300"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <PhonePanel
@@ -280,6 +354,14 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
             setSelected(null)
             setShowSpecs(false)
           }}
+        />
+      )}
+
+      {showCompare && comparePhones.length >= 2 && (
+        <CompareView
+          phones={comparePhones}
+          utilization={profile.utilization}
+          onClose={() => setShowCompare(false)}
         />
       )}
     </div>

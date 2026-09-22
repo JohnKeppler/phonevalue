@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { calculateUtilization } from './calculate'
 import { CATEGORIES } from './weights'
 import { DEMO_UTILIZATION } from '../data/demo'
+import { PHONE_CATALOG } from '../data/catalog'
 import {
   candidateCategoryUtilization,
   candidateWastedEuro,
@@ -105,6 +106,27 @@ describe('etiquetas de ficha', () => {
       const line = usageSentence(c.id, 60, 40)
       expect(line).toContain('40 %')
       expect(line.toLowerCase()).not.toContain('desperdic')
+    }
+  })
+})
+
+describe('compare: waste de varios candidatos', () => {
+  it('el desperdicio por teléfono coincide con candidateWastedEuro', () => {
+    const phones = PHONE_CATALOG.slice(0, 3)
+    for (const phone of phones) {
+      const waste = candidateWastedEuro(
+        phone.priceEuro,
+        DEMO_UTILIZATION,
+        phone.capabilities,
+      )
+      const perCat = candidateCategoryUtilization(
+        DEMO_UTILIZATION,
+        phone.capabilities,
+      )
+      const viaCalc = calculateUtilization(phone.priceEuro, perCat).totalWastedEuro
+      expect(waste).toBe(viaCalc)
+      expect(waste).toBeGreaterThanOrEqual(0)
+      expect(waste).toBeLessThanOrEqual(phone.priceEuro)
     }
   })
 })
