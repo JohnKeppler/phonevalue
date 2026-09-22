@@ -2,6 +2,7 @@ package com.valormovil.app.plugins
 
 import android.app.AppOpsManager
 import android.app.usage.UsageStats
+import android.app.usage.StorageStatsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -124,8 +125,9 @@ class PhoneUsagePlugin : Plugin() {
 
     /**
      * Storage totals aligned with Android Settings (internal / primary volume).
-     * Prefers StorageManager.getTotalBytes/getFreeBytes (API 26+) for the
-     * primary user-visible volume; falls back to StatFs on /data.
+     * Prefers StorageStatsManager.getTotalBytes/getFreeBytes (API 26+) for the
+     * primary user-visible volume UUID; falls back to StatFs on shared storage
+     * then /data.
      */
     @PluginMethod
     fun getStorageInfo(call: PluginCall) {
@@ -137,13 +139,14 @@ class PhoneUsagePlugin : Plugin() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-                    val uuid = resolvePrimaryStorageUuid(sm)
-                    val smTotal = sm.getTotalBytes(uuid)
-                    val smFree = sm.getFreeBytes(uuid)
+                    val ssm = context.getSystemService(StorageStatsManager::class.java)
+                    val uuid = resolvePrimaryStorageUuid(sm, ssm)
+                    val smTotal = ssm.getTotalBytes(uuid)
+                    val smFree = ssm.getFreeBytes(uuid)
                     if (smTotal > 0L) {
                         total = smTotal
                         free = smFree.coerceIn(0L, smTotal)
-                        source = "storage_manager"
+                        source = "storage_stats_manager"
                     }
                 } catch (_: Exception) {
                     // fall through to StatFs
@@ -151,12 +154,26 @@ class PhoneUsagePlugin : Plugin() {
             }
 
             if (total <= 0L) {
-                val path = Environment.getDataDirectory()
-                val stat = StatFs(path.path)
-                val blockSize = stat.blockSizeLong
-                total = stat.blockCountLong * blockSize
-                free = stat.availableBlocksLong * blockSize
-                source = "statfs"
+                // Prefer shared / emulated storage path (closer to Settings) over /data alone
+                val candidates = listOfNotNull(
+                    Environment.getExternalStorageDirectory(),
+                    Environment.getDataDirectory(),
+                )
+                for (path in candidates) {
+                    try {
+                        val stat = StatFs(path.path)
+                        val blockSize = stat.blockSizeLong
+                        val t = stat.blockCountLong * blockSize
+                        val f = stat.availableBlocksLong * blockSize
+                        if (t > total) {
+                            total = t
+                            free = f
+                            source = "statfs"
+                        }
+                    } catch (_: Exception) {
+                        // try next
+                    }
+                }
             }
 
             val used = (total - free).coerceAtLeast(0L)
@@ -166,7 +183,6 @@ class PhoneUsagePlugin : Plugin() {
             ret.put("usedBytes", used)
             ret.put("usedPercent", if (total > 0) (100.0 * used / total) else 0.0)
             ret.put("source", source)
-            // Optional marketed-ish total (nearest power-of-two GB) when usable differs
             val marketed = estimateMarketedTotalBytes(total)
             if (marketed != null && marketed != total) {
                 ret.put("marketedTotalBytes", marketed)
@@ -178,10 +194,14 @@ class PhoneUsagePlugin : Plugin() {
     }
 
     /**
-     * UUID for the primary internal volume (what Settings labels as almacenamiento interno).
-     * When several volumes exist, prefer primary; else the larger non-removable volume.
+     * UUID for the primary internal volume (almacenamiento interno in Settings).
+     * Prefer primary; if several non-removable volumes, pick the larger by
+     * StorageStatsManager totals.
      */
-    private fun resolvePrimaryStorageUuid(sm: StorageManager): UUID {
+    private fun resolvePrimaryStorageUuid(
+        sm: StorageManager,
+        ssm: StorageStatsManager,
+    ): UUID {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return StorageManager.UUID_DEFAULT
         }
@@ -190,7 +210,6 @@ class PhoneUsagePlugin : Plugin() {
         if (primary != null) {
             return uuidFromVolume(primary.uuid)
         }
-        // No explicit primary: prefer non-removable, then largest estimated via StorageManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var bestUuid = StorageManager.UUID_DEFAULT
             var bestTotal = -1L
@@ -198,7 +217,7 @@ class PhoneUsagePlugin : Plugin() {
                 if (vol.isRemovable) continue
                 val u = uuidFromVolume(vol.uuid)
                 try {
-                    val t = sm.getTotalBytes(u)
+                    val t = ssm.getTotalBytes(u)
                     if (t > bestTotal) {
                         bestTotal = t
                         bestUuid = u
@@ -224,12 +243,13 @@ class PhoneUsagePlugin : Plugin() {
     /** Rough marketed capacity (e.g. 256 GB) when usable capacity is lower. */
     private fun estimateMarketedTotalBytes(usableTotal: Long): Long? {
         if (usableTotal <= 0L) return null
-        val gb = usableTotal.toDouble() / (1000.0 * 1000.0 * 1000.0) // decimal GB (Settings-ish)
+        val gb = usableTotal.toDouble() / (1000.0 * 1000.0 * 1000.0)
         val marketedGb = listOf(16, 32, 64, 128, 256, 512, 1024)
-            .firstOrNull { it >= gb * 0.92 && it <= gb * 1.35 }
+            .firstOrNull { it.toDouble() >= gb * 0.92 && it.toDouble() <= gb * 1.35 }
             ?: return null
         val marketed = marketedGb.toLong() * 1000L * 1000L * 1000L
-        return if (kotlin.math.abs(marketed - usableTotal) > usableTotal * 0.03) marketed else null
+        val delta = kotlin.math.abs(marketed - usableTotal).toDouble()
+        return if (delta > usableTotal.toDouble() * 0.03) marketed else null
     }
 
     @PluginMethod
