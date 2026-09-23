@@ -1,6 +1,8 @@
 package com.valormovil.app.plugins
 
 import android.app.AppOpsManager
+import android.view.WindowManager
+import android.app.ActivityManager
 import android.app.usage.UsageStats
 import android.app.usage.StorageStatsManager
 import android.app.usage.UsageStatsManager
@@ -302,6 +304,66 @@ class PhoneUsagePlugin : Plugin() {
             )
         } catch (_: Exception) {
             ret.put("networkTransport", "unknown")
+        }
+
+        call.resolve(ret)
+    }
+
+
+    /**
+     * Build + memory + display metrics for the "Tu teléfono" / ficha block.
+     * All on-device; nothing uploaded.
+     */
+    @PluginMethod
+    fun getDeviceInfo(call: PluginCall) {
+        val ret = JSObject()
+        try {
+            ret.put("manufacturer", Build.MANUFACTURER ?: "")
+            ret.put("brand", Build.BRAND ?: "")
+            ret.put("model", Build.MODEL ?: "")
+            ret.put("device", Build.DEVICE ?: "")
+            ret.put("product", Build.PRODUCT ?: "")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    ret.put("sku", Build.SKU ?: "")
+                } catch (_: Exception) {
+                }
+            }
+        } catch (_: Exception) {
+        }
+
+        try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val mem = ActivityManager.MemoryInfo()
+            am.getMemoryInfo(mem)
+            ret.put("totalRamBytes", mem.totalMem)
+            ret.put("availRamBytes", mem.availMem)
+            ret.put("lowMemory", mem.lowMemory)
+        } catch (_: Exception) {
+        }
+
+        try {
+            val metrics = context.resources.displayMetrics
+            ret.put("displayWidthPx", metrics.widthPixels)
+            ret.put("displayHeightPx", metrics.heightPixels)
+            ret.put("densityDpi", metrics.densityDpi)
+            ret.put("density", metrics.density.toDouble())
+        } catch (_: Exception) {
+        }
+
+        try {
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = wm.currentWindowMetrics.bounds
+                ret.put("windowWidthPx", bounds.width())
+                ret.put("windowHeightPx", bounds.height())
+            }
+            @Suppress("DEPRECATION")
+            val display = wm.defaultDisplay
+            if (display != null) {
+                ret.put("refreshRateHz", display.refreshRate.toDouble())
+            }
+        } catch (_: Exception) {
         }
 
         call.resolve(ret)

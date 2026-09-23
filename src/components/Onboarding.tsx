@@ -1,10 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { NextIntent, UserProfile } from '../engine/types'
 import { DEMO_PROFILE } from '../data/demo'
-import { INTENT_OPTIONS } from '../data/intents'
-import { isNativeAndroid, PhoneUsage } from '../native/phoneUsage'
+import { getIntentOptions } from '../data/intents'
+import {
+  isNativeAndroid,
+  PhoneUsage,
+  toMeasuredInfo,
+} from '../native/phoneUsage'
 import { mapUsageToUtilization } from '../engine/mapUsage'
 import { APP_VERSION, RELEASES_LATEST_URL } from '../version'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 interface Props {
   onComplete: (profile: UserProfile) => void
@@ -13,6 +19,7 @@ interface Props {
 }
 
 export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
+  const { t } = useTranslation()
   const [priceText, setPriceText] = useState(
     savedProfile ? String(savedProfile.purchasePrice) : '400',
   )
@@ -81,11 +88,11 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
     setError(null)
     try {
       await PhoneUsage.openUsageAccessSettings()
-      setStatus(
-        'Activa «ValorMóvil» en Acceso al uso y vuelve aquí. Luego pulsa Leer datos.',
-      )
+      setStatus(t('onboarding.usageSettingsHint'))
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo abrir Ajustes')
+      setError(
+        e instanceof Error ? e.message : t('onboarding.openSettingsError'),
+      )
     }
   }
 
@@ -93,7 +100,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
     try {
       const r = await PhoneUsage.isUsageAccessGranted()
       setUsageGranted(r.granted)
-      setStatus(r.granted ? 'Permiso concedido. Ya puedes leer datos.' : null)
+      setStatus(r.granted ? t('onboarding.permOk') : null)
     } catch {
       setUsageGranted(false)
     }
@@ -107,38 +114,38 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
       const { granted } = await PhoneUsage.isUsageAccessGranted()
       setUsageGranted(granted)
       if (!granted) {
-        setError(
-          'Necesitas conceder Acceso al uso (Usage Access) en Ajustes del sistema.',
-        )
+        setError(t('onboarding.needUsage'))
         setBusy(false)
         return
       }
 
       let storageFailed = false
-      const [summary, storage, signals] = await Promise.all([
+      const [summary, storage, signals, deviceRaw] = await Promise.all([
         PhoneUsage.getUsageSummary({ rangeDays: 30 }),
         PhoneUsage.getStorageInfo().catch(() => {
           storageFailed = true
           return null
         }),
         PhoneUsage.getDeviceSignals().catch(() => null),
+        PhoneUsage.getDeviceInfo().catch(() => null),
       ])
 
       const measured = mapUsageToUtilization(summary, storage, signals)
 
       let confidenceNote = measured.confidenceNote
       if (storageFailed || !storage) {
-        confidenceNote =
-          `${confidenceNote} Almacenamiento no se pudo leer; esa categoría queda estimada.`
-        setStatus(
-          'Aviso: no se pudo leer el almacenamiento. El resto se midió; Almacenamiento queda estimado.',
-        )
+        confidenceNote = `${confidenceNote}${t('onboarding.storageNoteSuffix')}`
+        setStatus(t('onboarding.storageWarn'))
       }
 
       const price = parseEuros(priceText, 400)
       const budget = parseEuros(budgetText, 250)
       setPriceText(String(price))
       setBudgetText(String(budget))
+
+      const deviceInfo = deviceRaw
+        ? toMeasuredInfo(deviceRaw, storage)
+        : undefined
 
       onComplete({
         purchasePrice: price,
@@ -151,6 +158,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
         confidenceNote,
         storageUsedBytes: measured.storageUsedBytes,
         storageTotalBytes: measured.storageTotalBytes,
+        deviceInfo,
       })
     } catch (e) {
       const msg =
@@ -158,15 +166,25 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
           ? String((e as { message: string }).message)
           : e instanceof Error
             ? e.message
-            : 'Error al leer datos del teléfono'
+            : t('onboarding.readError')
       setError(msg)
     } finally {
       setBusy(false)
     }
   }
 
+  const sourceLabel =
+    savedProfile?.dataSource === 'measured'
+      ? t('onboarding.sourceMeasured')
+      : savedProfile?.dataSource === 'demo'
+        ? t('onboarding.sourceDemo')
+        : t('onboarding.sourceSynthetic')
+
   return (
     <div className="app-screen mx-auto flex min-h-dvh max-w-lg flex-col px-4 pb-[max(2.5rem,var(--app-pad-bottom))]">
+      <div className="mb-2 flex justify-end">
+        <LanguageSwitcher compact />
+      </div>
       <header className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 shadow-lg shadow-brand-600/30">
           <span className="text-2xl" aria-hidden>
@@ -174,39 +192,37 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
           </span>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-white">
-          ValorMóvil
+          {t('app.name')}
         </h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Descubre cuanto de tu teléfono aprovechas de verdad — y cuanto dinero
-          se queda sin usar.
-        </p>
+        <p className="mt-2 text-sm text-slate-400">{t('app.tagline')}</p>
       </header>
 
       {savedProfile && onRestore && (
         <div className="mb-5 rounded-xl border border-brand-500/40 bg-brand-600/10 p-4">
           <p className="text-sm font-semibold text-brand-100">
-            Tienes un perfil guardado
+            {t('onboarding.savedTitle')}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            {savedProfile.purchasePrice} € ·{' '}
-            {savedProfile.dataSource === 'measured'
-              ? 'medido'
-              : savedProfile.dataSource === 'demo'
-                ? 'demo'
-                : 'sintético'}
-            {savedProfile.historyDays != null
-              ? ` · ${savedProfile.historyDays} días`
-              : ''}
+            {t('onboarding.savedMeta', {
+              price: savedProfile.purchasePrice,
+              source: sourceLabel,
+              days:
+                savedProfile.historyDays != null
+                  ? t('onboarding.daysSuffix', {
+                      days: savedProfile.historyDays,
+                    })
+                  : '',
+            })}
           </p>
           <button
             type="button"
             onClick={onRestore}
             className="mt-3 w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white"
           >
-            Restaurar último perfil
+            {t('onboarding.restore')}
           </button>
           <p className="mt-2 text-[11px] text-slate-500">
-            O mide de nuevo abajo («Leer datos del teléfono» / calcular).
+            {t('onboarding.orRemeasure')}
           </p>
         </div>
       )}
@@ -214,7 +230,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
       <form onSubmit={submit} className="flex flex-1 flex-col gap-5">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-300">
-            Precio de compra de tu móvil actual (€)
+            {t('onboarding.priceLabel')}
           </span>
           <input
             type="text"
@@ -228,29 +244,29 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-300">
-            Presupuesto para el próximo móvil (€)
+            {t('onboarding.budgetLabel')}
           </span>
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={budgetText}
-            onChange={(e) => setBudgetText(e.target.value.replace(/[^0-9]/g, ''))}
+            onChange={(e) =>
+              setBudgetText(e.target.value.replace(/[^0-9]/g, ''))
+            }
             className="w-full rounded-xl border border-slate-600 bg-slate-800/80 px-4 py-3 text-lg text-white outline-none ring-brand-500 focus:ring-2"
           />
         </label>
 
         <fieldset>
           <legend className="mb-1 text-sm font-medium text-slate-300">
-            Tipo de uso del próximo móvil
+            {t('onboarding.intentLegend')}
           </legend>
           <p className="mb-2 text-xs text-slate-500">
-            Puedes marcar varios. No cambia la medición de tu móvil actual: solo
-            ordena las recomendaciones. Si no marcas nada, seguimos tu uso, con
-            un poco de margen.
+            {t('onboarding.intentHint')}
           </p>
           <div className="flex flex-wrap gap-2">
-            {INTENT_OPTIONS.map((opt) => {
+            {getIntentOptions().map((opt) => {
               const on = intents.includes(opt.id)
               return (
                 <button
@@ -274,11 +290,10 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
         {native && (
           <div className="rounded-xl border border-brand-500/40 bg-brand-600/10 p-4">
             <p className="mb-2 text-sm font-semibold text-brand-200">
-              Datos reales del teléfono (Android)
+              {t('onboarding.nativeTitle')}
             </p>
             <p className="mb-3 text-xs text-slate-400">
-              Lee UsageStats en el dispositivo. La lista de apps no se sube a
-              ningún servidor.
+              {t('onboarding.nativeHint')}
             </p>
             {usageGranted === false && (
               <button
@@ -286,7 +301,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
                 onClick={openUsageSettings}
                 className="mb-2 w-full rounded-xl border border-amber-500/50 bg-amber-500/10 py-2.5 text-sm font-medium text-amber-200"
               >
-                Abrir ajustes de Acceso al uso
+                {t('onboarding.openUsage')}
               </button>
             )}
             <div className="flex flex-col gap-2">
@@ -296,27 +311,25 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
                 onClick={readPhoneData}
                 className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 disabled:opacity-60"
               >
-                {busy ? 'Leyendo…' : 'Leer datos del teléfono'}
+                {busy ? t('onboarding.reading') : t('onboarding.readData')}
               </button>
               <button
                 type="button"
                 onClick={refreshPermission}
                 className="w-full rounded-lg py-1.5 text-xs text-slate-400 hover:text-white"
               >
-                Comprobar permiso otra vez
+                {t('onboarding.checkPerm')}
                 {usageGranted === true
-                  ? ' · concedido ✓'
+                  ? t('onboarding.permGranted')
                   : usageGranted === false
-                    ? ' · pendiente'
+                    ? t('onboarding.permPending')
                     : ''}
               </button>
             </div>
             {status && (
               <p className="mt-2 text-xs text-emerald-300/90">{status}</p>
             )}
-            {error && (
-              <p className="mt-2 text-xs text-orange-300">{error}</p>
-            )}
+            {error && <p className="mt-2 text-xs text-orange-300">{error}</p>}
           </div>
         )}
 
@@ -325,23 +338,22 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
             type="submit"
             className="w-full rounded-xl bg-brand-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-500 active:scale-[0.98]"
           >
-            Calcular mi aprovechamiento
+            {t('onboarding.calculate')}
           </button>
           <button
             type="button"
             onClick={loadDemo}
             className="w-full rounded-xl border border-dashed border-slate-500 py-3 text-sm font-medium text-slate-300 transition hover:border-brand-400 hover:text-white"
           >
-            Cargar perfil demo (1000 € → ~31 %)
+            {t('onboarding.loadDemo')}
           </button>
           {!native && (
             <p className="text-center text-[11px] text-slate-500">
-              En el navegador solo hay datos demo/sintéticos. Instala el APK
-              Android para leer UsageStats reales.
+              {t('onboarding.browserOnly')}
             </p>
           )}
           <p className="pt-2 text-center text-[11px] text-slate-600">
-            ValorMóvil {APP_VERSION} ·{' '}
+            {t('app.name')} {APP_VERSION} ·{' '}
             <button
               type="button"
               onClick={() =>
@@ -349,7 +361,7 @@ export function Onboarding({ onComplete, savedProfile, onRestore }: Props) {
               }
               className="text-brand-400 hover:text-brand-300"
             >
-              Buscar actualización
+              {t('app.checkUpdate')}
             </button>
           </p>
         </div>

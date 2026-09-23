@@ -427,4 +427,4 @@ export const PHONE_CATALOG: Phone[] = [
 
 /** Aviso corto para UI: los precios no son cotizaciones en vivo. */
 export const CATALOG_PRICE_DISCLAIMER =
-  'Precios orientativos de catálogo (UE). No son precios en vivo de tiendas.'
+  'Precios orientativos de catálogo (UE). No son precios en vivo de tiendas. Sin afiliados.'

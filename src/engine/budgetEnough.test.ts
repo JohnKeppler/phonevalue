@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import { describe, expect, it } from 'vitest'
 import { DEMO_UTILIZATION } from '../data/demo'
 import { PHONE_CATALOG } from '../data/catalog'
@@ -13,7 +14,8 @@ describe('deriveBudgetBand / budgetEnoughSentence', () => {
     expect(band.littleGainAbove).toBeGreaterThanOrEqual(band.enoughEuro)
   })
 
-  it('la frase en español incluye ambos precios', () => {
+  it('la frase en español incluye ambos precios', async () => {
+    await i18n.changeLanguage('es')
     const band = deriveBudgetBand(DEMO_UTILIZATION, PHONE_CATALOG)
     const sentence = budgetEnoughSentence(DEMO_UTILIZATION, PHONE_CATALOG)
     expect(sentence).toMatch(/Con tu uso, un móvil de ~\d+ € encaja/)

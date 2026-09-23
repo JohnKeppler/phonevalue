@@ -7,6 +7,7 @@ import type {
   CategoryId,
 } from './types'
 import { CATEGORIES } from './weights'
+import i18n from '../i18n'
 import { calculateUtilization } from './calculate'
 
 /** Penalizacion asimetrica: infra-capacidad duele mas que exceso */
@@ -199,19 +200,24 @@ function buildReasons(
   for (const cat of CATEGORIES) {
     const id = cat.id as CategoryId
     const over = caps[id as keyof PhoneNeeds] - needs[id as keyof PhoneNeeds]
-    gaps.push({ id, label: cat.label, over })
+    const label = i18n.t(`categories.${id}.label`, { defaultValue: cat.label })
+    gaps.push({ id, label, over })
   }
 
   const best = [...gaps].sort((a, b) => Math.abs(a.over) - Math.abs(b.over))[0]
   if (best) {
-    reasons.push(`Buen ajuste en ${best.label.toLowerCase()}`)
+    reasons.push(
+      i18n.t('reasons.goodFit', {
+        label: best.label.toLowerCase(),
+      }),
+    )
   }
 
   if (caps.bateria >= needs.bateria) {
-    reasons.push('Autonomia suficiente para tu ritmo diario')
+    reasons.push(i18n.t('reasons.batteryOk'))
   }
   if (caps.soc >= needs.soc && caps.ram >= needs.ram) {
-    reasons.push('Rendimiento acorde a tus apps habituales')
+    reasons.push(i18n.t('reasons.perfOk'))
   }
 
   for (const h of phone.highlights.slice(0, 1)) {
@@ -228,28 +234,20 @@ function reasonForIntent(
 ): string | null {
   switch (intent) {
     case 'fotos':
-      return caps.camara >= needs.camara
-        ? 'Cámara a la altura de las fotos que buscas'
-        : null
+      return caps.camara >= needs.camara ? i18n.t('reasons.fotos') : null
     case 'video':
-      return caps.pantalla >= needs.pantalla
-        ? 'Pantalla lista para el vídeo que quieres'
-        : null
+      return caps.pantalla >= needs.pantalla ? i18n.t('reasons.video') : null
     case 'juegos':
-      return caps.soc >= needs.soc
-        ? 'Procesador suficiente para juegos'
-        : null
+      return caps.soc >= needs.soc ? i18n.t('reasons.juegos') : null
     case 'whatsapp':
       return caps.conectividad >= needs.conectividad
-        ? 'Conectividad cómoda para WhatsApp y redes'
+        ? i18n.t('reasons.whatsapp')
         : null
     case 'bateria':
-      return caps.bateria >= needs.bateria
-        ? 'Batería acorde a lo que buscas'
-        : null
+      return caps.bateria >= needs.bateria ? i18n.t('reasons.bateria') : null
     case 'almacenamiento':
       return caps.storage >= needs.storage
-        ? 'Espacio holgado para lo que quieres guardar'
+        ? i18n.t('reasons.almacenamiento')
         : null
     default:
       return null
@@ -257,10 +255,10 @@ function reasonForIntent(
 }
 
 function labelForFit(score: number): string {
-  if (score >= 85) return 'Encaje excelente'
-  if (score >= 70) return 'Muy buen encaje'
-  if (score >= 55) return 'Buen encaje'
-  return 'Encaje aceptable'
+  if (score >= 85) return i18n.t('fit.excellent')
+  if (score >= 70) return i18n.t('fit.veryGood')
+  if (score >= 55) return i18n.t('fit.good')
+  return i18n.t('fit.ok')
 }
 
 function clamp(n: number, min: number, max: number): number {

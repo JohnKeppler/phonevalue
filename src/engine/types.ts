@@ -76,9 +76,43 @@ export interface Phone {
   name: string
   brand: string
   priceEuro: number
+  currency?: string
   /** Capacidades relativas 0–100 por categoría */
   capabilities: PhoneNeeds
   highlights: string[]
+  /** Model / Build codes for device-sheet matching */
+  modelCodes?: string[]
+  /** Neutral https search or product page — never affiliate-tagged */
+  purchaseUrl?: string
+}
+
+/** Snapshot measured on-device (Android plugin). */
+export interface DeviceMeasuredInfo {
+  manufacturer: string
+  brand: string
+  model: string
+  device: string
+  totalRamBytes: number
+  availRamBytes: number
+  storageTotalBytes?: number
+  storageUsedBytes?: number
+  displayWidthPx?: number
+  displayHeightPx?: number
+  densityDpi?: number
+  refreshRateHz?: number
+}
+
+/** Published model sheet (from local JSON catalog). */
+export interface DevicePublishedSpecs {
+  key: string
+  name?: string
+  brand?: string
+  soc?: string
+  ramOptions?: string
+  storageOptions?: string
+  display?: string
+  battery?: string
+  matchScore: number
 }
 
 export interface UserProfile {
@@ -95,6 +129,8 @@ export interface UserProfile {
   /** Raw storage bytes from device (when measured) for UI verification */
   storageUsedBytes?: number
   storageTotalBytes?: number
+  /** On-device Build + RAM + display snapshot */
+  deviceInfo?: DeviceMeasuredInfo
 }
 
 export interface Recommendation {

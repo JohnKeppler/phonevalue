@@ -1,4 +1,5 @@
 import type { CategoryId } from './types'
+import i18n from '../i18n'
 
 /** Nombre corto para la frase de aprovechamiento (no es un cálculo de desperdicio). */
 export const CATEGORY_SHORT: Record<CategoryId, string> = {
@@ -85,7 +86,14 @@ export function usageSentence(
   utilizedPct: number,
 ): string {
   const pct = Math.round(clamp(utilizedPct, 0, 100))
-  return `${CATEGORY_SHORT[id]} (${specLabel(id, capacityScore)}): según tu uso aprovecharías un ${pct} %.`
+  const short = i18n.t(`categories.${id}.short`, {
+    defaultValue: CATEGORY_SHORT[id],
+  })
+  return i18n.t('specs.usageSentence', {
+    short,
+    spec: specLabel(id, capacityScore),
+    pct,
+  })
 }
 
 function clamp(n: number, min: number, max: number): number {

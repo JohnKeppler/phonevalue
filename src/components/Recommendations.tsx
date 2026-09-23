@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { NextIntent, Phone, Recommendation, UserProfile } from '../engine/types'
 import {
   candidateCategoryUtilization,
@@ -8,19 +9,32 @@ import {
 import { budgetEnoughSentence } from '../engine/budgetEnough'
 import { CATEGORIES } from '../engine/weights'
 import { usageSentence } from '../engine/specs'
-import { CATALOG_PRICE_DISCLAIMER, PHONE_CATALOG } from '../data/catalog'
-import { INTENT_OPTIONS } from '../data/intents'
+import { getIntentOptions } from '../data/intents'
+import {
+  formatCatalogUpdated,
+  type CatalogState,
+} from '../data/catalogRemote'
 import { TransparencyNote } from './TransparencyNote'
 import { CompareView } from './CompareView'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { pushBackHandler } from '../native/backStack'
 
 interface Props {
   profile: UserProfile
+  catalog: CatalogState
+  onRefreshCatalog: () => Promise<CatalogState>
   onBack: () => void
   onIntentsChange: (intents: NextIntent[]) => void
 }
 
-export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
+export function Recommendations({
+  profile,
+  catalog,
+  onRefreshCatalog,
+  onBack,
+  onIntentsChange,
+}: Props) {
+  const { t, i18n } = useTranslation()
   const [countText, setCountText] = useState('10')
   const [minText, setMinText] = useState('')
   const [maxText, setMaxText] = useState(String(profile.nextBudget))
@@ -30,12 +44,37 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
   const [showSpecs, setShowSpecs] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
+  const [catalogBusy, setCatalogBusy] = useState(false)
+  const [liveCatalog, setLiveCatalog] = useState(catalog)
+
+  useEffect(() => {
+    setLiveCatalog(catalog)
+  }, [catalog])
+
+  useEffect(() => {
+    let cancelled = false
+    setCatalogBusy(true)
+    void onRefreshCatalog()
+      .then((c) => {
+        if (!cancelled) setLiveCatalog(c)
+      })
+      .finally(() => {
+        if (!cancelled) setCatalogBusy(false)
+      })
+    return () => {
+      cancelled = true
+    }
+    // Refresh once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const phones = liveCatalog.phones
 
   const brands = useMemo(() => {
-    return [...new Set(PHONE_CATALOG.map((p) => p.brand))].sort((a, b) =>
-      a.localeCompare(b, 'es'),
+    return [...new Set(phones.map((p) => p.brand))].sort((a, b) =>
+      a.localeCompare(b, i18n.language),
     )
-  }, [])
+  }, [phones, i18n.language])
 
   const topN = parseCount(countText)
   const minPrice = parseBound(minText)
@@ -43,7 +82,7 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
 
   const recs = useMemo(
     () =>
-      recommendPhones(PHONE_CATALOG, {
+      recommendPhones(phones, {
         utilization: profile.utilization,
         intents: profile.nextIntents,
         topN,
@@ -53,6 +92,7 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
         excludeBrands,
       }),
     [
+      phones,
       profile.utilization,
       profile.nextIntents,
       topN,
@@ -60,6 +100,7 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
       maxPrice,
       includeBrands,
       excludeBrands,
+      i18n.language,
     ],
   )
 
@@ -67,18 +108,29 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
     () =>
       budgetEnoughSentence(
         profile.utilization,
-        PHONE_CATALOG,
+        phones,
         profile.nextIntents,
       ),
-    [profile.utilization, profile.nextIntents],
+    [profile.utilization, profile.nextIntents, phones, i18n.language],
   )
 
   const comparePhones: Phone[] = useMemo(() => {
-    const byId = new Map(PHONE_CATALOG.map((p) => [p.id, p]))
+    const byId = new Map(phones.map((p) => [p.id, p]))
     return compareIds
       .map((id) => byId.get(id))
       .filter((p): p is Phone => p != null)
-  }, [compareIds])
+  }, [compareIds, phones])
+
+  const updatedLabel = useMemo(() => {
+    const when = formatCatalogUpdated(liveCatalog, i18n.language)
+    const src =
+      liveCatalog.source === 'network'
+        ? t('recs.updatedNetwork')
+        : liveCatalog.source === 'cache'
+          ? t('recs.updatedCache')
+          : t('recs.updatedBundled')
+    return t('recs.updated', { when: `${when} · ${src}` })
+  }, [liveCatalog, i18n.language, t])
 
   function toggleCompare(id: string) {
     setCompareIds((prev) => {
@@ -116,7 +168,6 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
     setShowSpecs(false)
   }
 
-  // Android back: specs → panel → compare → list (handled by App → dashboard)
   useEffect(() => {
     if (!showCompare) return
     return pushBackHandler(() => {
@@ -137,32 +188,44 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
     })
   }, [selected, showSpecs])
 
+  const priceSuffix =
+    maxPrice != null ? t('recs.uptoPrice', { n: maxPrice }) : ''
+
   return (
     <div className="app-screen mx-auto max-w-lg px-4 pb-36">
       <header className="mb-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="mb-3 inline-flex min-h-11 items-center rounded-xl px-2 py-2 text-sm font-semibold text-brand-300 hover:bg-slate-800 hover:text-brand-200"
-        >
-          ← Volver al panel
-        </button>
-        <h1 className="text-xl font-bold text-white">Recomendaciones</h1>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex min-h-11 items-center rounded-xl px-2 py-2 text-sm font-semibold text-brand-300 hover:bg-slate-800 hover:text-brand-200"
+          >
+            {t('recs.back')}
+          </button>
+          <LanguageSwitcher compact />
+        </div>
+        <h1 className="text-xl font-bold text-white">{t('recs.title')}</h1>
         <p className="text-sm text-slate-400">
-          Encajan con tu uso medido
-          {profile.nextIntents.length > 0 ? ' y con lo que quieres del próximo móvil' : ''}.
-          Se actualizan al momento.
+          {t('recs.subtitle', {
+            extra:
+              profile.nextIntents.length > 0 ? t('recs.subtitleIntents') : '',
+          })}
         </p>
         <p className="mt-3 rounded-xl border border-brand-500/30 bg-brand-600/10 px-3 py-2.5 text-sm leading-relaxed text-brand-100">
           {enoughSentence}
         </p>
-        <p className="mt-2 text-[11px] text-slate-500">{CATALOG_PRICE_DISCLAIMER}</p>
+        <p className="mt-2 text-[11px] text-slate-500">
+          {liveCatalog.disclaimer || t('catalog.disclaimer')}
+        </p>
+        <p className="mt-1 text-[11px] text-slate-500">
+          {catalogBusy ? t('recs.catalogLoading') : updatedLabel}
+        </p>
       </header>
 
       <section className="mb-5 space-y-4 rounded-2xl border border-slate-700/80 bg-slate-800/50 p-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Cuántos móviles
+            {t('recs.howMany')}
           </p>
           <div className="mt-2 flex items-center gap-2">
             <CountChip
@@ -179,7 +242,7 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              aria-label="Número de móviles"
+              aria-label={t('recs.countAria')}
               value={countText}
               onChange={(e) =>
                 setCountText(e.target.value.replace(/[^0-9]/g, ''))
@@ -191,17 +254,19 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
 
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Precio (€)
+            {t('recs.price')}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <label className="block">
-              <span className="mb-1 block text-[11px] text-slate-500">Mínimo</span>
+              <span className="mb-1 block text-[11px] text-slate-500">
+                {t('recs.min')}
+              </span>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={minText}
-                placeholder="sin mínimo"
+                placeholder={t('recs.noMin')}
                 onChange={(e) =>
                   setMinText(e.target.value.replace(/[^0-9]/g, ''))
                 }
@@ -210,14 +275,14 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
             </label>
             <label className="block">
               <span className="mb-1 block text-[11px] text-slate-500">
-                Máximo
+                {t('recs.max')}
               </span>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={maxText}
-                placeholder="sin máximo"
+                placeholder={t('recs.noMax')}
                 onChange={(e) =>
                   setMaxText(e.target.value.replace(/[^0-9]/g, ''))
                 }
@@ -228,15 +293,15 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
         </div>
 
         <BrandFilter
-          title="Incluir marcas"
-          hint="Vacío = todas"
+          title={t('recs.includeBrands')}
+          hint={t('recs.includeHint')}
           brands={brands}
           selected={includeBrands}
           onToggle={toggleInclude}
         />
         <BrandFilter
-          title="Excluir marcas"
-          hint="Se quitan aunque estén incluidas"
+          title={t('recs.excludeBrands')}
+          hint={t('recs.excludeHint')}
           brands={brands}
           selected={excludeBrands}
           onToggle={toggleExclude}
@@ -245,10 +310,10 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
 
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Tipo de uso del próximo móvil
+            {t('recs.intentTitle')}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {INTENT_OPTIONS.map((opt) => {
+            {getIntentOptions().map((opt) => {
               const on = profile.nextIntents.includes(opt.id)
               return (
                 <button
@@ -271,16 +336,15 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
       </section>
 
       <p className="mb-3 text-xs text-slate-500">
-        {recs.length} {recs.length === 1 ? 'móvil' : 'móviles'}
-        {maxPrice != null ? ` · hasta ${maxPrice} €` : ''}
+        {t(recs.length === 1 ? 'recs.countResult_one' : 'recs.countResult_other', {
+          count: recs.length,
+          price: priceSuffix,
+        })}
       </p>
 
       {recs.length === 0 ? (
         <div className="rounded-2xl border border-slate-600 bg-slate-800/60 p-6 text-center">
-          <p className="text-slate-300">
-            Ningún móvil del catálogo pasa esos filtros. Prueba a ampliar el
-            precio o quitar marcas.
-          </p>
+          <p className="text-slate-300">{t('recs.empty')}</p>
         </div>
       ) : (
         <ol className="space-y-3">
@@ -288,53 +352,57 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
             const inCompare = compareIds.includes(rec.phone.id)
             const compareFull = compareIds.length >= 3 && !inCompare
             return (
-            <li key={rec.phone.id}>
-              <div className="overflow-hidden rounded-2xl border border-slate-600/80 bg-slate-800/70 shadow-lg transition hover:border-brand-500/50">
-                <div className="flex items-center gap-2 border-b border-slate-700/80 bg-slate-900/40 px-4 py-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
-                    {i + 1}
-                  </span>
-                  <span className="text-xs font-medium uppercase tracking-wide text-brand-300">
-                    {rec.fitLabel}
-                  </span>
-                  <span className="ml-auto text-xs tabular-nums text-slate-400">
-                    Fit {Math.round(rec.fitScore)}%
-                  </span>
+              <li key={rec.phone.id}>
+                <div className="overflow-hidden rounded-2xl border border-slate-600/80 bg-slate-800/70 shadow-lg transition hover:border-brand-500/50">
+                  <div className="flex items-center gap-2 border-b border-slate-700/80 bg-slate-900/40 px-4 py-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
+                      {i + 1}
+                    </span>
+                    <span className="text-xs font-medium uppercase tracking-wide text-brand-300">
+                      {rec.fitLabel}
+                    </span>
+                    <span className="ml-auto text-xs tabular-nums text-slate-400">
+                      {t('recs.fit', { n: Math.round(rec.fitScore) })}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openPhone(rec)}
+                    className="w-full p-4 text-left"
+                  >
+                    <p className="text-xs text-slate-400">{rec.phone.brand}</p>
+                    <h2 className="text-lg font-bold text-white">
+                      {rec.phone.name}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {rec.phone.priceEuro} €
+                    </p>
+                    <p className="mt-2 text-xs text-brand-300">
+                      {t('recs.tapWaste')}
+                    </p>
+                  </button>
+                  <div className="border-t border-slate-700/60 px-4 py-2">
+                    <label
+                      className={`flex items-center gap-2 text-xs ${
+                        compareFull ? 'text-slate-600' : 'text-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={inCompare}
+                        disabled={compareFull}
+                        onChange={() => toggleCompare(rec.phone.id)}
+                        className="rounded border-slate-500"
+                      />
+                      {inCompare
+                        ? t('recs.inCompare')
+                        : compareFull
+                          ? t('recs.maxCompare')
+                          : t('recs.addCompare')}
+                    </label>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => openPhone(rec)}
-                  className="w-full p-4 text-left"
-                >
-                  <p className="text-xs text-slate-400">{rec.phone.brand}</p>
-                  <h2 className="text-lg font-bold text-white">
-                    {rec.phone.name}
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-300">
-                    {rec.phone.priceEuro} €
-                  </p>
-                  <p className="mt-2 text-xs text-brand-300">
-                    Toca para ver precio y euros desperdiciados
-                  </p>
-                </button>
-                <div className="border-t border-slate-700/60 px-4 py-2">
-                  <label className={`flex items-center gap-2 text-xs ${compareFull ? 'text-slate-600' : 'text-slate-300'}`}>
-                    <input
-                      type="checkbox"
-                      checked={inCompare}
-                      disabled={compareFull}
-                      onChange={() => toggleCompare(rec.phone.id)}
-                      className="rounded border-slate-500"
-                    />
-                    {inCompare
-                      ? 'En comparativa'
-                      : compareFull
-                        ? 'Máximo 3 móviles'
-                        : 'Añadir a comparar'}
-                  </label>
-                </div>
-              </div>
-            </li>
+              </li>
             )
           })}
         </ol>
@@ -352,14 +420,14 @@ export function Recommendations({ profile, onBack, onIntentsChange }: Props) {
               onClick={() => setShowCompare(true)}
               className="min-h-12 flex-1 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white"
             >
-              Comparar {compareIds.length} móviles
+              {t('recs.compareN', { n: compareIds.length })}
             </button>
             <button
               type="button"
               onClick={() => setCompareIds([])}
               className="min-h-12 rounded-xl border border-slate-600 px-3 py-3 text-sm text-slate-300"
             >
-              Limpiar
+              {t('recs.clear')}
             </button>
           </div>
         </div>
@@ -405,6 +473,7 @@ function PhonePanel({
   onHideSpecs: () => void
   onClose: () => void
 }) {
+  const { t } = useTranslation()
   const phone = rec.phone
   const waste = candidateWastedEuro(
     phone.priceEuro,
@@ -412,6 +481,15 @@ function PhonePanel({
     phone.capabilities,
   )
   const perCat = candidateCategoryUtilization(utilization, phone.capabilities)
+
+  function openPurchase() {
+    const url =
+      phone.purchaseUrl ||
+      `https://www.google.com/search?q=${encodeURIComponent(
+        `${phone.brand} ${phone.name} comprar`,
+      )}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <div
@@ -436,7 +514,7 @@ function PhonePanel({
             type="button"
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-700 hover:text-white"
-            aria-label="Cerrar"
+            aria-label={t('app.close')}
           >
             ✕
           </button>
@@ -450,13 +528,13 @@ function PhonePanel({
                 onClick={onHideSpecs}
                 className="mb-3 text-sm text-brand-400"
               >
-                ← Precio y desperdiciado
+                {t('recs.backToPrice')}
               </button>
               <h3 className="text-base font-semibold text-white">
-                Características
+                {t('recs.features')}
               </h3>
               <p className="mb-3 text-xs text-slate-400">
-                Según tu uso, esto es lo que aprovecharías de cada parte.
+                {t('recs.featuresHint')}
               </p>
               <ul className="space-y-2">
                 {CATEGORIES.map((cat) => {
@@ -483,7 +561,7 @@ function PhonePanel({
           ) : (
             <>
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Precio
+                {t('recs.priceLabel')}
               </p>
               <p className="text-3xl font-bold tabular-nums text-white">
                 {phone.priceEuro} €
@@ -491,18 +569,21 @@ function PhonePanel({
 
               <div className="mt-4 rounded-2xl bg-orange-500/10 px-4 py-4 text-center ring-1 ring-orange-500/40">
                 <p className="text-xs font-medium uppercase tracking-wide text-orange-300/90">
-                  De ese precio quedarían desperdiciados
+                  {t('recs.wasteLead')}
                 </p>
                 <p className="mt-1 text-5xl font-black tabular-nums text-orange-300">
                   {Math.round(waste)} €
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
-                  de esos {phone.priceEuro} €, con tu uso actual
+                  {t('recs.wasteSub', { price: phone.priceEuro })}
                 </p>
               </div>
 
               <p className="mt-3 text-xs text-slate-500">
-                {rec.fitLabel} · fit {Math.round(rec.fitScore)}%
+                {t('recs.fitMeta', {
+                  label: rec.fitLabel,
+                  score: Math.round(rec.fitScore),
+                })}
               </p>
               <ul className="mt-2 space-y-1">
                 {rec.reasons.map((reason) => (
@@ -520,7 +601,14 @@ function PhonePanel({
                 onClick={onShowSpecs}
                 className="mt-4 w-full rounded-xl border border-brand-500/50 bg-brand-600/15 py-3 text-sm font-semibold text-brand-100"
               >
-                Ver características
+                {t('recs.showFeatures')}
+              </button>
+              <button
+                type="button"
+                onClick={openPurchase}
+                className="mt-2 w-full rounded-xl border border-slate-600 py-3 text-sm font-medium text-slate-200"
+              >
+                {t('recs.openBuy')}
               </button>
             </>
           )}

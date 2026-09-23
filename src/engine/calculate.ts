@@ -1,4 +1,5 @@
 import { CATEGORIES, DEMO_BADGES } from './weights'
+import i18n from '../i18n'
 import type {
   BadgeKind,
   CategoryId,
@@ -34,14 +35,16 @@ export function calculateUtilization(
       DEMO_BADGES[meta.id as CategoryId]
     return {
       id: meta.id,
-      label: meta.label,
+      label: i18n.t(`categories.${meta.id}.label`, { defaultValue: meta.label }),
       weight: meta.weight,
       utilization: u,
       assignedEuro: round2(assignedEuro),
       usedEuro: round2(usedEuro),
       wastedEuro: round2(wastedEuro),
       badge,
-      howCalculated: meta.howCalculated,
+      howCalculated: i18n.t(`categories.${meta.id}.how`, {
+        defaultValue: meta.howCalculated,
+      }),
     }
   })
 

@@ -1,13 +1,8 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CategoryId, CategoryResult } from '../engine/types'
 
 type ChartView = 'barras' | 'tarta' | 'mosaico'
-
-const VIEWS: { id: ChartView; label: string }[] = [
-  { id: 'barras', label: 'Barras' },
-  { id: 'tarta', label: 'Tarta' },
-  { id: 'mosaico', label: 'Mosaico' },
-]
 
 const CATEGORY_COLORS: Record<CategoryId, string> = {
   soc: '#3b82f6',
@@ -28,21 +23,27 @@ interface Props {
 }
 
 export function UsageCharts({ categories, onSelect }: Props) {
+  const { t } = useTranslation()
   const [view, setView] = useState<ChartView>('barras')
+  const views: { id: ChartView; label: string }[] = [
+    { id: 'barras', label: t('charts.bars') },
+    { id: 'tarta', label: t('charts.pie') },
+    { id: 'mosaico', label: t('charts.mosaic') },
+  ]
 
   return (
     <section className="mb-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-slate-300">
-          Desglose por categoria
+          {t('charts.breakdown')}
         </h2>
       </div>
       <div
         role="tablist"
-        aria-label="Vista del desglose"
+        aria-label={t('charts.viewLabel')}
         className="mb-3 grid grid-cols-3 gap-1 rounded-xl bg-slate-800/80 p-1"
       >
-        {VIEWS.map((v) => (
+        {views.map((v) => (
           <button
             key={v.id}
             type="button"
@@ -74,6 +75,7 @@ export function UsageCharts({ categories, onSelect }: Props) {
 }
 
 function BarView({ categories, onSelect }: Props) {
+  const { t } = useTranslation()
   return (
     <ul className="space-y-2">
       {categories.map((cat) => (
@@ -88,8 +90,8 @@ function BarView({ categories, onSelect }: Props) {
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-full"
                   style={{
-              background: `linear-gradient(165deg, ${CATEGORY_COLORS[cat.id]} 0%, #0f172a 140%)`,
-            }}
+                    background: `linear-gradient(165deg, ${CATEGORY_COLORS[cat.id]} 0%, #0f172a 140%)`,
+                  }}
                   aria-hidden
                 />
                 {cat.label}
@@ -111,8 +113,8 @@ function BarView({ categories, onSelect }: Props) {
               />
             </div>
             <div className="flex justify-between text-xs text-slate-400">
-              <span>{cat.usedEuro} € usados</span>
-              <span>{cat.wastedEuro} € desperdiciados</span>
+              <span>{t('charts.usedEuro', { n: cat.usedEuro })}</span>
+              <span>{t('charts.wastedEuro', { n: cat.wastedEuro })}</span>
             </div>
           </button>
         </li>
@@ -122,6 +124,7 @@ function BarView({ categories, onSelect }: Props) {
 }
 
 function PieView({ categories, onSelect }: Props) {
+  const { t } = useTranslation()
   const total = categories.reduce((s, c) => s + c.assignedEuro, 0) || 1
   const cx = 110
   const cy = 110
@@ -136,7 +139,12 @@ function PieView({ categories, onSelect }: Props) {
 
   return (
     <div className="rounded-2xl border border-slate-700/80 bg-slate-800/60 p-3">
-      <svg viewBox="0 0 220 220" className="mx-auto w-full max-w-[240px]" role="img" aria-label="Tarta del desglose por categoría">
+      <svg
+        viewBox="0 0 220 220"
+        className="mx-auto w-full max-w-[240px]"
+        role="img"
+        aria-label={t('charts.pieAria')}
+      >
         {slices.map(({ cat, start, end }) => (
           <path
             key={cat.id}
@@ -146,7 +154,11 @@ function PieView({ categories, onSelect }: Props) {
             onClick={() => onSelect(cat)}
           >
             <title>
-              {cat.label}: {cat.utilization}% · {cat.wastedEuro} € desperdiciados
+              {t('charts.sliceTitle', {
+                label: cat.label,
+                pct: cat.utilization,
+                waste: cat.wastedEuro,
+              })}
             </title>
           </path>
         ))}
@@ -158,7 +170,7 @@ function PieView({ categories, onSelect }: Props) {
           className="fill-slate-400"
           fontSize="11"
         >
-          peso €
+          {t('charts.weightEuro')}
         </text>
         <text
           x={cx}
@@ -168,7 +180,7 @@ function PieView({ categories, onSelect }: Props) {
           fontSize="13"
           fontWeight="700"
         >
-          10 partes
+          {t('charts.tenParts')}
         </text>
       </svg>
       <ul className="mt-2 grid grid-cols-2 gap-1.5">
@@ -199,6 +211,7 @@ function PieView({ categories, onSelect }: Props) {
 }
 
 function MosaicView({ categories, onSelect }: Props) {
+  const { t } = useTranslation()
   return (
     <ul className="grid grid-cols-2 gap-2">
       {categories.map((cat) => (
@@ -219,7 +232,7 @@ function MosaicView({ categories, onSelect }: Props) {
               <span className="text-sm font-semibold">%</span>
             </span>
             <span className="mt-1 text-[11px] text-white/90">
-              {cat.wastedEuro} € desperdiciados
+              {t('charts.wastedEuro', { n: cat.wastedEuro })}
             </span>
           </button>
         </li>
@@ -229,6 +242,7 @@ function MosaicView({ categories, onSelect }: Props) {
 }
 
 function Badge({ kind }: { kind: 'medido' | 'estimado' }) {
+  const { t } = useTranslation()
   return (
     <span
       className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
@@ -237,7 +251,7 @@ function Badge({ kind }: { kind: 'medido' | 'estimado' }) {
           : 'bg-amber-500/20 text-amber-300'
       }`}
     >
-      {kind}
+      {kind === 'medido' ? t('app.measured') : t('app.estimated')}
     </span>
   )
 }

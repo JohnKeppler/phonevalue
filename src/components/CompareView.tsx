@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Phone, UtilizationMap } from '../engine/types'
 import {
   candidateCategoryUtilization,
   candidateWastedEuro,
 } from '../engine/recommend'
 import { CATEGORIES } from '../engine/weights'
+import i18n from '../i18n'
 
 interface Props {
   phones: Phone[]
@@ -13,6 +15,7 @@ interface Props {
 }
 
 export function CompareView({ phones, utilization, onClose }: Props) {
+  const { t } = useTranslation()
   const rows = useMemo(
     () =>
       phones.map((phone) => {
@@ -46,13 +49,13 @@ export function CompareView({ phones, utilization, onClose }: Props) {
       >
         <div className="flex items-center justify-between gap-3 border-b border-slate-700 px-4 py-3">
           <h2 id="compare-title" className="text-lg font-bold text-white">
-            Comparar ({cols})
+            {t('compare.title', { n: cols })}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-700 hover:text-white"
-            aria-label="Cerrar"
+            aria-label={t('app.close')}
           >
             ✕
           </button>
@@ -81,7 +84,7 @@ export function CompareView({ phones, utilization, onClose }: Props) {
             <tbody>
               <tr className="border-t border-slate-700/80">
                 <td className="sticky left-0 bg-slate-900 py-2 pr-2 text-slate-400">
-                  Precio
+                  {t('compare.price')}
                 </td>
                 {rows.map(({ phone }) => (
                   <td
@@ -94,7 +97,7 @@ export function CompareView({ phones, utilization, onClose }: Props) {
               </tr>
               <tr className="border-t border-slate-700/80">
                 <td className="sticky left-0 bg-slate-900 py-2 pr-2 text-orange-300/90">
-                  Desperdiciados
+                  {t('compare.wasted')}
                 </td>
                 {rows.map(({ phone, waste }) => (
                   <td
@@ -108,7 +111,9 @@ export function CompareView({ phones, utilization, onClose }: Props) {
               {CATEGORIES.map((cat) => (
                 <tr key={cat.id} className="border-t border-slate-800">
                   <td className="sticky left-0 bg-slate-900 py-1.5 pr-2 text-slate-500">
-                    {cat.label}
+                    {i18n.t(`categories.${cat.id}.label`, {
+                      defaultValue: cat.label,
+                    })}
                   </td>
                   {rows.map(({ phone, perCat }) => (
                     <td
@@ -123,8 +128,7 @@ export function CompareView({ phones, utilization, onClose }: Props) {
             </tbody>
           </table>
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-            % = cuánto aprovecharías de cada categoría en ese móvil, con tu uso
-            medido. Los euros desperdiciados usan el mismo motor que la ficha.
+            {t('compare.hint')}
           </p>
         </div>
       </div>

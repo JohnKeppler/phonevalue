@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import type { NextIntent, Phone, UtilizationMap } from './types'
 import { deriveNeeds, fitDistance, scoreFit } from './recommend'
 
@@ -73,5 +74,8 @@ export function budgetEnoughSentence(
     catalog,
     intents,
   )
-  return `Con tu uso, un móvil de ~${enoughEuro} € encaja; por encima de ${littleGainAbove} € casi no ganas nada.`
+  return i18n.t('budget.enough', {
+    enough: enoughEuro,
+    above: littleGainAbove,
+  })
 }
