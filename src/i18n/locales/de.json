@@ -1,0 +1,256 @@
+{
+  "app": {
+    "name": "ValorMóvil",
+    "loading": "Laden…",
+    "tagline": "Sieh, wie viel deines Handys du wirklich nutzt — und wie viel Geld ungenutzt bleibt.",
+    "yourPhone": "Dein Telefon",
+    "measured": "gemessen",
+    "estimated": "geschätzt",
+    "publishedSheet": "laut Modellblatt",
+    "noPublishedMatch": "Kein Modellblatt im lokalen Katalog; nur gemessene Werte.",
+    "close": "Schließen",
+    "version": "Version {{version}} · neues APK über das vorherige installieren",
+    "checkUpdate": "Nach Update suchen",
+    "language": "Sprache"
+  },
+  "onboarding": {
+    "savedTitle": "Du hast ein gespeichertes Profil",
+    "savedMeta": "{{price}} € · {{source}}{{days}}",
+    "restore": "Letztes Profil wiederherstellen",
+    "orRemeasure": "Oder unten erneut messen («Telefondaten lesen» / berechnen).",
+    "priceLabel": "Kaufpreis deines aktuellen Handys (€)",
+    "budgetLabel": "Budget für das nächste Handy (€)",
+    "intentLegend": "Nutzung des nächsten Handys",
+    "intentHint": "Mehrere möglich. Ändert nicht die Messung des aktuellen Handys — sortiert nur Empfehlungen. Ohne Auswahl folgen wir deiner Nutzung mit etwas Spielraum.",
+    "nativeTitle": "Echte Telefondaten (Android)",
+    "nativeHint": "Liest UsageStats auf dem Gerät. Die App-Liste wird nicht hochgeladen.",
+    "openUsage": "Nutzungszugriff-Einstellungen öffnen",
+    "readData": "Telefondaten lesen",
+    "reading": "Lesen…",
+    "checkPerm": "Berechtigung erneut prüfen",
+    "permGranted": " · erteilt ✓",
+    "permPending": " · ausstehend",
+    "calculate": "Meine Nutzung berechnen",
+    "loadDemo": "Demo-Profil laden (1000 € → ~31 %)",
+    "browserOnly": "Im Browser nur Demo-/Synthetikdaten. Android-APK für echte UsageStats installieren.",
+    "usageSettingsHint": "Aktiviere «ValorMóvil» unter Nutzungszugriff und komme zurück. Dann auf Daten lesen tippen.",
+    "permOk": "Berechtigung erteilt. Du kannst Daten lesen.",
+    "needUsage": "Du musst Nutzungszugriff in den Systemeinstellungen erteilen.",
+    "storageWarn": "Hinweis: Speicher konnte nicht gelesen werden. Der Rest wurde gemessen; Speicher bleibt geschätzt.",
+    "storageNoteSuffix": " Speicher nicht lesbar; diese Kategorie bleibt geschätzt.",
+    "readError": "Fehler beim Lesen der Telefondaten",
+    "openSettingsError": "Einstellungen konnten nicht geöffnet werden",
+    "sourceMeasured": "gemessen",
+    "sourceDemo": "Demo",
+    "sourceSynthetic": "synthetisch",
+    "daysSuffix": " · {{days}} Tage"
+  },
+  "dashboard": {
+    "brand": "Valor Móvil",
+    "title": "Deine Nutzung",
+    "nextPhone": "Nächstes Handy: {{intents}}",
+    "remeasure": "Erneut messen",
+    "reset": "Zurücksetzen",
+    "globalUtil": "Gesamtnutzung",
+    "used": "Genutzt",
+    "wasted": "Verschwendet",
+    "showRecs": "Passende Handys anzeigen · bis {{budget}} €",
+    "confidenceTitle": "Messvertrauen",
+    "historyDays": "{{days}} Tage Historie",
+    "historyUnknown": "Historie unbekannt",
+    "medidoCount": "{{n}} gemessen",
+    "estimadoCount": "{{n}} geschätzt",
+    "thinHistory": "⚠ Kurze Historie (unter 7 Tagen): Werte können schwanken. Nutze das Handy noch einige Tage und miss erneut.",
+    "unmeasuredTitle": "Nicht gemessene Daten",
+    "unmeasuredBody": "Du siehst ein <strong>{{source}}</strong>-Profil. Es spiegelt nicht deine echte Nutzung. Auf Android «Telefondaten lesen» nutzen.",
+    "demo": "demo",
+    "synthetic": "synthetic"
+  },
+  "charts": {
+    "breakdown": "Aufschlüsselung nach Kategorie",
+    "viewLabel": "Ansicht der Aufschlüsselung",
+    "bars": "Balken",
+    "pie": "Kreis",
+    "mosaic": "Mosaik",
+    "usedEuro": "{{n}} € genutzt",
+    "wastedEuro": "{{n}} € verschwendet",
+    "pieAria": "Kreisdiagramm der Kategorien",
+    "weightEuro": "€-Gewicht",
+    "tenParts": "10 Teile",
+    "sliceTitle": "{{label}}: {{pct}}% · {{waste}} € verschwendet"
+  },
+  "category": {
+    "weight": "Gewicht",
+    "usage": "Nutzung",
+    "assigned": "Zugewiesen",
+    "used": "Genutzt: {{n}} €",
+    "wasted": "Verschwendet: {{n}} €",
+    "howTitle": "So wird gerechnet",
+    "occupied": "Belegt: {{used}} GB von {{total}} GB ({{pct}} %)",
+    "badgeMeasured": "Gemessen",
+    "badgeEstimated": "Geschätzt",
+    "deviceBlock": "Dein Telefon",
+    "ramMeasured": "RAM gesamt (gemessen): {{gb}} GB",
+    "ramAvail": "RAM verfügbar (gemessen): {{gb}} GB",
+    "storageMeasured": "Speicher (gemessen): {{used}} / {{total}} GB",
+    "displayMeasured": "Display (gemessen): {{w}}×{{h}} px · {{dpi}} dpi{{refresh}}",
+    "refreshHz": " · {{hz}} Hz",
+    "publishedSoc": "SoC (Blatt): {{v}}",
+    "publishedRam": "RAM (Blatt): {{v}}",
+    "publishedStorage": "Speicher (Blatt): {{v}}",
+    "publishedDisplay": "Display (Blatt): {{v}}",
+    "publishedBattery": "Akku (Blatt): {{v}}"
+  },
+  "recs": {
+    "back": "← Zurück zum Panel",
+    "title": "Empfehlungen",
+    "subtitle": "Passen zu deiner gemessenen Nutzung{{extra}}. Aktualisieren sich sofort.",
+    "subtitleIntents": " und zu dem, was du vom nächsten Handy willst",
+    "howMany": "Wie viele Handys",
+    "countAria": "Anzahl der Handys",
+    "price": "Preis (€)",
+    "min": "Minimum",
+    "max": "Maximum",
+    "noMin": "kein Minimum",
+    "noMax": "kein Maximum",
+    "includeBrands": "Marken einschließen",
+    "includeHint": "Leer = alle",
+    "excludeBrands": "Marken ausschließen",
+    "excludeHint": "Werden entfernt, auch wenn eingeschlossen",
+    "intentTitle": "Nutzung des nächsten Handys",
+    "countResult_one": "{{count}} Handy{{price}}",
+    "countResult_other": "{{count}} Handys{{price}}",
+    "uptoPrice": " · bis {{n}} €",
+    "empty": "Kein Katalog-Handy passt zu diesen Filtern. Preis erweitern oder Marken entfernen.",
+    "tapWaste": "Tippen für Preis und verschwendete Euro",
+    "inCompare": "Im Vergleich",
+    "maxCompare": "Maximal 3 Handys",
+    "addCompare": "Zum Vergleich hinzufügen",
+    "compareN": "{{n}} Handys vergleichen",
+    "clear": "Leeren",
+    "backToPrice": "← Preis und Verschwendung",
+    "features": "Eigenschaften",
+    "featuresHint": "Nach deiner Nutzung: so viel würdest du von jedem Teil nutzen.",
+    "priceLabel": "Preis",
+    "wasteLead": "Von diesem Preis würden verschwendet",
+    "wasteSub": "von diesen {{price}} €, bei deiner aktuellen Nutzung",
+    "fitMeta": "{{label}} · fit {{score}}%",
+    "showFeatures": "Eigenschaften anzeigen",
+    "fit": "Fit {{n}}%",
+    "updated": "Aktualisiert: {{when}}",
+    "updatedNetwork": "aus Online-Katalog",
+    "updatedCache": "aus Cache",
+    "updatedBundled": "mitgelieferter Katalog (offline)",
+    "openBuy": "Suchen (ohne Affiliate)",
+    "catalogLoading": "Katalog wird aktualisiert…"
+  },
+  "compare": {
+    "title": "Vergleich ({{n}})",
+    "price": "Preis",
+    "wasted": "Verschwendet",
+    "hint": "% = wie viel jeder Kategorie du auf dem Handy nutzen würdest (gemessene Nutzung). Verschwendete Euro nutzen dieselbe Engine wie das Detailblatt."
+  },
+  "transparency": {
+    "measuredTitle": "Auf dem Gerät gemessene Daten",
+    "measuredBody": "Diese Sitzung nutzt <code>UsageStats</code>{{days}} und lokale Signale (Speicher, Akku, Netz). <strong>gemessen</strong> kommt vom Telefon; <strong>geschätzt</strong> wird abgeleitet. Die App-Liste wird nicht hochgeladen.",
+    "daysPart": " (~{{days}} Tage Historie)",
+    "noteTitle": "Transparenzhinweis",
+    "noteBody": "In der nativen Android-App nutzt ValorMóvil die <code>UsageStats</code>-API und Systemsignale. Diese Ansicht nutzt <strong>{{source}}</strong> — Zahlen illustrieren das Konzept. APK installieren, um dein Gerät zu messen.",
+    "demoData": "Demo-Daten",
+    "syntheticData": "synthetische Daten",
+    "catalogPrices": "Empfehlungspreise kommen aus dem Katalog-Feed (orientierend), nicht aus Live-Checkout. Kauflinks sind neutrale Suchen — ohne Affiliate oder Provision."
+  },
+  "budget": {
+    "enough": "Bei deiner Nutzung passt ein Handy für ~{{enough}} €; über {{above}} € gewinnst du kaum noch."
+  },
+  "intents": {
+    "fotos": "Fotos",
+    "video": "Video",
+    "juegos": "Spiele",
+    "whatsapp": "WhatsApp / Social",
+    "bateria": "Akku",
+    "almacenamiento": "Speicher"
+  },
+  "categories": {
+    "soc": {
+      "label": "Prozessor (SoC)",
+      "how": "Geschätzt aus typischer CPU/GPU-Last deines Nutzungsprofils.",
+      "short": "Prozessor"
+    },
+    "pantalla": {
+      "label": "Display",
+      "how": "Basierend auf Screen-on-Zeit, Helligkeit und genutzter Bildwiederholrate.",
+      "short": "Display"
+    },
+    "camara": {
+      "label": "Kamera",
+      "how": "Häufigkeit von Fotos/Videos und genutzten Spezialmodi.",
+      "short": "Kamera"
+    },
+    "storage": {
+      "label": "Speicher",
+      "how": "Belegter vs. nutzbarer Speicher (wie in den Einstellungen).",
+      "short": "Speicher"
+    },
+    "ram": {
+      "label": "Arbeitsspeicher (RAM)",
+      "how": "Spitzen und Mittelwert des RAM-Einsatzes gegenüber installierter Kapazität.",
+      "short": "RAM"
+    },
+    "bateria": {
+      "label": "Akku & Laden",
+      "how": "Tageszyklen, reale Laufzeit und Nutzung von Schnell-/Kabellosladen.",
+      "short": "Akku"
+    },
+    "conectividad": {
+      "label": "Konnektivität",
+      "how": "Nutzung von 5G, Wi-Fi 6/7, NFC und Bluetooth.",
+      "short": "Konnektivität"
+    },
+    "audio": {
+      "label": "Audio",
+      "how": "Medienwiedergabe, Stereolautsprecher und Mikrofone.",
+      "short": "Audio"
+    },
+    "sensores": {
+      "label": "Sensoren & Zahlungen",
+      "how": "Fingerabdruck, Gesicht, NFC, Kompass, Gyro und Gesundheitssensoren.",
+      "short": "Sensoren"
+    },
+    "software": {
+      "label": "Software & Marke",
+      "how": "Wahrgenommener Wert von Updates, Ökosystem und Marken-Extras vs. reale Nutzung.",
+      "short": "Software"
+    }
+  },
+  "specs": {
+    "usageSentence": "{{short}} ({{spec}}): nach deiner Nutzung würdest du etwa {{pct}} % nutzen."
+  },
+  "fit": {
+    "excellent": "Ausgezeichnete Passung",
+    "veryGood": "Sehr gute Passung",
+    "good": "Gute Passung",
+    "ok": "Akzeptable Passung"
+  },
+  "reasons": {
+    "goodFit": "Gute Passung bei {{label}}",
+    "batteryOk": "Genug Akku für deinen Tagesrhythmus",
+    "perfOk": "Leistung passend zu deinen üblichen Apps",
+    "fotos": "Kamera auf dem Niveau der Fotos, die du willst",
+    "video": "Display bereit für das Video, das du willst",
+    "juegos": "Prozessor ausreichend für Spiele",
+    "whatsapp": "Bequeme Konnektivität für WhatsApp und Social",
+    "bateria": "Akku passend zu dem, was du suchst",
+    "almacenamiento": "Großzügiger Speicher für das, was du behalten willst"
+  },
+  "catalog": {
+    "disclaimer": "Orientierende EU-Katalogpreise. Keine Live-Ladenpreise."
+  },
+  "lang": {
+    "es": "Español",
+    "en": "English",
+    "pt": "Português",
+    "it": "Italiano",
+    "de": "Deutsch"
+  }
+}

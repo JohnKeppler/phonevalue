@@ -1,0 +1,390 @@
+package com.valormovil.app.plugins
+
+import android.app.AppOpsManager
+import android.view.WindowManager
+import android.app.ActivityManager
+import android.app.usage.UsageStats
+import android.app.usage.StorageStatsManager
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.BatteryManager
+import android.os.Build
+import android.os.Environment
+import android.os.Process
+import android.os.StatFs
+import android.os.storage.StorageManager
+import java.util.UUID
+import android.provider.Settings
+import com.getcapacitor.JSArray
+import com.getcapacitor.JSObject
+import com.getcapacitor.Plugin
+import com.getcapacitor.PluginCall
+import com.getcapacitor.PluginMethod
+import com.getcapacitor.annotation.CapacitorPlugin
+
+/**
+ * Local Capacitor plugin: UsageStats + storage + basic device signals.
+ * All data stays on-device; nothing is uploaded.
+ */
+@CapacitorPlugin(name = "PhoneUsage")
+class PhoneUsagePlugin : Plugin() {
+
+    @PluginMethod
+    fun isUsageAccessGranted(call: PluginCall) {
+        val granted = hasUsageAccess()
+        val ret = JSObject()
+        ret.put("granted", granted)
+        call.resolve(ret)
+    }
+
+    @PluginMethod
+    fun openUsageAccessSettings(call: PluginCall) {
+        try {
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            activity.startActivity(intent)
+            call.resolve()
+        } catch (e: Exception) {
+            call.reject("No se pudo abrir Ajustes de acceso al uso: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Returns aggregated foreground time by package for the requested window,
+     * plus earliest/latest coverage so the UI can show "X días de historial".
+     *
+     * options:
+     *  - rangeDays: number (default 7) — look-back window
+     */
+    @PluginMethod
+    fun getUsageSummary(call: PluginCall) {
+        if (!hasUsageAccess()) {
+            call.reject("USAGE_ACCESS_DENIED", "Falta el permiso de acceso al uso (Usage Access).")
+            return
+        }
+
+        val rangeDays = call.getInt("rangeDays") ?: 30
+        val end = System.currentTimeMillis()
+        val begin = end - rangeDays.toLong() * 24L * 60L * 60L * 1000L
+
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val aggregated: Map<String, UsageStats> =
+            usm.queryAndAggregateUsageStats(begin, end) ?: emptyMap()
+
+        // Also query INTERVAL_DAILY for better coverage bounds when available
+        val daily = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, begin, end)
+            ?: emptyList()
+
+        var earliest = Long.MAX_VALUE
+        var latest = 0L
+        var totalForeground = 0L
+
+        val packages = JSArray()
+        for ((pkg, stats) in aggregated) {
+            val ms = stats.totalTimeInForeground
+            if (ms <= 0L) continue
+            totalForeground += ms
+
+            val first = stats.firstTimeStamp
+            val last = stats.lastTimeStamp
+            if (first in 1 until earliest) earliest = first
+            if (last > latest) latest = last
+
+            val row = JSObject()
+            row.put("packageName", pkg)
+            row.put("totalTimeInForegroundMs", ms)
+            row.put("lastTimeUsed", stats.lastTimeUsed)
+            packages.put(row)
+        }
+
+        // Refine coverage from daily buckets
+        for (s in daily) {
+            if (s.totalTimeInForeground <= 0L) continue
+            if (s.firstTimeStamp in 1 until earliest) earliest = s.firstTimeStamp
+            if (s.lastTimeStamp > latest) latest = s.lastTimeStamp
+        }
+
+        if (earliest == Long.MAX_VALUE) earliest = begin
+        if (latest == 0L) latest = end
+
+        val coverageMs = (latest - earliest).coerceAtLeast(0L)
+        val historyDays = (coverageMs / (24.0 * 60 * 60 * 1000)).coerceAtLeast(0.0)
+
+        val ret = JSObject()
+        ret.put("beginTime", begin)
+        ret.put("endTime", end)
+        ret.put("rangeDaysRequested", rangeDays)
+        ret.put("earliestTimestamp", earliest)
+        ret.put("latestTimestamp", latest)
+        ret.put("historyDays", historyDays)
+        ret.put("totalForegroundMs", totalForeground)
+        ret.put("packages", packages)
+        call.resolve(ret)
+    }
+
+    /**
+     * Storage totals aligned with Android Settings (internal / primary volume).
+     * Prefers StorageStatsManager.getTotalBytes/getFreeBytes (API 26+) for the
+     * primary user-visible volume UUID; falls back to StatFs on shared storage
+     * then /data.
+     */
+    @PluginMethod
+    fun getStorageInfo(call: PluginCall) {
+        try {
+            var total = 0L
+            var free = 0L
+            var source = "statfs"
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+                    val ssm = context.getSystemService(StorageStatsManager::class.java)
+                    val uuid = resolvePrimaryStorageUuid(sm, ssm)
+                    val smTotal = ssm.getTotalBytes(uuid)
+                    val smFree = ssm.getFreeBytes(uuid)
+                    if (smTotal > 0L) {
+                        total = smTotal
+                        free = smFree.coerceIn(0L, smTotal)
+                        source = "storage_stats_manager"
+                    }
+                } catch (_: Exception) {
+                    // fall through to StatFs
+                }
+            }
+
+            if (total <= 0L) {
+                // Prefer shared / emulated storage path (closer to Settings) over /data alone
+                val candidates = listOfNotNull(
+                    Environment.getExternalStorageDirectory(),
+                    Environment.getDataDirectory(),
+                )
+                for (path in candidates) {
+                    try {
+                        val stat = StatFs(path.path)
+                        val blockSize = stat.blockSizeLong
+                        val t = stat.blockCountLong * blockSize
+                        val f = stat.availableBlocksLong * blockSize
+                        if (t > total) {
+                            total = t
+                            free = f
+                            source = "statfs"
+                        }
+                    } catch (_: Exception) {
+                        // try next
+                    }
+                }
+            }
+
+            val used = (total - free).coerceAtLeast(0L)
+            val ret = JSObject()
+            ret.put("totalBytes", total)
+            ret.put("freeBytes", free)
+            ret.put("usedBytes", used)
+            ret.put("usedPercent", if (total > 0) (100.0 * used / total) else 0.0)
+            ret.put("source", source)
+            val marketed = estimateMarketedTotalBytes(total)
+            if (marketed != null && marketed != total) {
+                ret.put("marketedTotalBytes", marketed)
+            }
+            call.resolve(ret)
+        } catch (e: Exception) {
+            call.reject("STORAGE_ERROR", e.message, e)
+        }
+    }
+
+    /**
+     * UUID for the primary internal volume (almacenamiento interno in Settings).
+     * Prefer primary; if several non-removable volumes, pick the larger by
+     * StorageStatsManager totals.
+     */
+    private fun resolvePrimaryStorageUuid(
+        sm: StorageManager,
+        ssm: StorageStatsManager,
+    ): UUID {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return StorageManager.UUID_DEFAULT
+        }
+        val volumes = sm.storageVolumes
+        val primary = volumes.firstOrNull { it.isPrimary }
+        if (primary != null) {
+            return uuidFromVolume(primary.uuid)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var bestUuid = StorageManager.UUID_DEFAULT
+            var bestTotal = -1L
+            for (vol in volumes) {
+                if (vol.isRemovable) continue
+                val u = uuidFromVolume(vol.uuid)
+                try {
+                    val t = ssm.getTotalBytes(u)
+                    if (t > bestTotal) {
+                        bestTotal = t
+                        bestUuid = u
+                    }
+                } catch (_: Exception) {
+                    // skip
+                }
+            }
+            if (bestTotal > 0L) return bestUuid
+        }
+        return StorageManager.UUID_DEFAULT
+    }
+
+    private fun uuidFromVolume(uuidStr: String?): UUID {
+        if (uuidStr.isNullOrBlank()) return StorageManager.UUID_DEFAULT
+        return try {
+            UUID.fromString(uuidStr)
+        } catch (_: Exception) {
+            StorageManager.UUID_DEFAULT
+        }
+    }
+
+    /** Rough marketed capacity (e.g. 256 GB) when usable capacity is lower. */
+    private fun estimateMarketedTotalBytes(usableTotal: Long): Long? {
+        if (usableTotal <= 0L) return null
+        val gb = usableTotal.toDouble() / (1000.0 * 1000.0 * 1000.0)
+        val marketedGb = listOf(16, 32, 64, 128, 256, 512, 1024)
+            .firstOrNull { it.toDouble() >= gb * 0.92 && it.toDouble() <= gb * 1.35 }
+            ?: return null
+        val marketed = marketedGb.toLong() * 1000L * 1000L * 1000L
+        val delta = kotlin.math.abs(marketed - usableTotal).toDouble()
+        return if (delta > usableTotal.toDouble() * 0.03) marketed else null
+    }
+
+    @PluginMethod
+    fun getDeviceSignals(call: PluginCall) {
+        val ret = JSObject()
+
+        // Battery
+        try {
+            val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            ret.put("batteryPercent", level)
+            val chargeCounter = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
+            if (chargeCounter > 0) {
+                ret.put("batteryChargeCounterUaH", chargeCounter)
+            }
+            val statusIntent = context.registerReceiver(
+                null,
+                android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+            )
+            if (statusIntent != null) {
+                val status = statusIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                val plugged = statusIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+                ret.put(
+                    "batteryCharging",
+                    status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                        status == BatteryManager.BATTERY_STATUS_FULL,
+                )
+                ret.put("batteryPlugged", plugged != 0)
+            }
+        } catch (_: Exception) {
+            // optional
+        }
+
+        // Network
+        try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = cm.activeNetwork
+            val caps = if (network != null) cm.getNetworkCapabilities(network) else null
+            val transport = when {
+                caps == null -> "none"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+                else -> "other"
+            }
+            ret.put("networkTransport", transport)
+            ret.put(
+                "networkValidated",
+                caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true,
+            )
+        } catch (_: Exception) {
+            ret.put("networkTransport", "unknown")
+        }
+
+        call.resolve(ret)
+    }
+
+
+    /**
+     * Build + memory + display metrics for the "Tu teléfono" / ficha block.
+     * All on-device; nothing uploaded.
+     */
+    @PluginMethod
+    fun getDeviceInfo(call: PluginCall) {
+        val ret = JSObject()
+        try {
+            ret.put("manufacturer", Build.MANUFACTURER ?: "")
+            ret.put("brand", Build.BRAND ?: "")
+            ret.put("model", Build.MODEL ?: "")
+            ret.put("device", Build.DEVICE ?: "")
+            ret.put("product", Build.PRODUCT ?: "")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    ret.put("sku", Build.SKU ?: "")
+                } catch (_: Exception) {
+                }
+            }
+        } catch (_: Exception) {
+        }
+
+        try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val mem = ActivityManager.MemoryInfo()
+            am.getMemoryInfo(mem)
+            ret.put("totalRamBytes", mem.totalMem)
+            ret.put("availRamBytes", mem.availMem)
+            ret.put("lowMemory", mem.lowMemory)
+        } catch (_: Exception) {
+        }
+
+        try {
+            val metrics = context.resources.displayMetrics
+            ret.put("displayWidthPx", metrics.widthPixels)
+            ret.put("displayHeightPx", metrics.heightPixels)
+            ret.put("densityDpi", metrics.densityDpi)
+            ret.put("density", metrics.density.toDouble())
+        } catch (_: Exception) {
+        }
+
+        try {
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = wm.currentWindowMetrics.bounds
+                ret.put("windowWidthPx", bounds.width())
+                ret.put("windowHeightPx", bounds.height())
+            }
+            @Suppress("DEPRECATION")
+            val display = wm.defaultDisplay
+            if (display != null) {
+                ret.put("refreshRateHz", display.refreshRate.toDouble())
+            }
+        } catch (_: Exception) {
+        }
+
+        call.resolve(ret)
+    }
+
+    private fun hasUsageAccess(): Boolean {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                Process.myUid(),
+                context.packageName,
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                Process.myUid(),
+                context.packageName,
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+}

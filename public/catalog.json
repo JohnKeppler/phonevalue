@@ -1,0 +1,1034 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-23",
+  "currency": "EUR",
+  "disclaimer": "Precios orientativos de catálogo (UE). No son precios en vivo de tiendas. Sin afiliados.",
+  "phones": [
+    {
+      "id": "redmi-14c",
+      "brand": "Xiaomi",
+      "name": "Redmi 14C",
+      "modelCodes": [
+        "redmi14c",
+        "redmi-14c"
+      ],
+      "priceEur": 129,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 35,
+        "pantalla": 42,
+        "camara": 38,
+        "storage": 40,
+        "ram": 40,
+        "bateria": 65,
+        "conectividad": 40,
+        "audio": 35,
+        "sensores": 35,
+        "software": 35
+      },
+      "highlights": [
+        "Entrada muy asequible con buena batería"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20Redmi%2014C%20comprar"
+    },
+    {
+      "id": "samsung-a16",
+      "brand": "Samsung",
+      "name": "Galaxy A16",
+      "modelCodes": [
+        "galaxya16",
+        "samsung-a16"
+      ],
+      "priceEur": 199,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 42,
+        "pantalla": 55,
+        "camara": 48,
+        "storage": 48,
+        "ram": 48,
+        "bateria": 62,
+        "conectividad": 48,
+        "audio": 42,
+        "sensores": 48,
+        "software": 68
+      },
+      "highlights": [
+        "Actualizaciones largas a precio de entrada"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A16%20comprar"
+    },
+    {
+      "id": "cmf-phone-1",
+      "brand": "Nothing",
+      "name": "CMF Phone 1",
+      "modelCodes": [
+        "cmfphone1",
+        "cmf-phone-1"
+      ],
+      "priceEur": 219,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 48,
+        "pantalla": 50,
+        "camara": 45,
+        "storage": 50,
+        "ram": 50,
+        "bateria": 65,
+        "conectividad": 45,
+        "audio": 45,
+        "sensores": 40,
+        "software": 55
+      },
+      "highlights": [
+        "Modulares y precio muy contenido"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Nothing%20CMF%20Phone%201%20comprar"
+    },
+    {
+      "id": "redmi-note-14",
+      "brand": "Xiaomi",
+      "name": "Redmi Note 14",
+      "modelCodes": [
+        "redminote14",
+        "redmi-note-14"
+      ],
+      "priceEur": 229,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 50,
+        "pantalla": 62,
+        "camara": 55,
+        "storage": 55,
+        "ram": 55,
+        "bateria": 75,
+        "conectividad": 50,
+        "audio": 42,
+        "sensores": 48,
+        "software": 42
+      },
+      "highlights": [
+        "Gran batería y AMOLED a buen precio"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20Redmi%20Note%2014%20comprar"
+    },
+    {
+      "id": "motorola-g85",
+      "brand": "Motorola",
+      "name": "moto g85",
+      "modelCodes": [
+        "motog85",
+        "motorola-g85"
+      ],
+      "priceEur": 249,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 52,
+        "pantalla": 68,
+        "camara": 55,
+        "storage": 55,
+        "ram": 55,
+        "bateria": 70,
+        "conectividad": 50,
+        "audio": 50,
+        "sensores": 48,
+        "software": 52
+      },
+      "highlights": [
+        "Pantalla pOLED curva en gama media baja"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Motorola%20moto%20g85%20comprar"
+    },
+    {
+      "id": "samsung-a25",
+      "brand": "Samsung",
+      "name": "Galaxy A25",
+      "modelCodes": [
+        "galaxya25",
+        "samsung-a25"
+      ],
+      "priceEur": 279,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 48,
+        "pantalla": 60,
+        "camara": 52,
+        "storage": 50,
+        "ram": 50,
+        "bateria": 62,
+        "conectividad": 50,
+        "audio": 45,
+        "sensores": 50,
+        "software": 65
+      },
+      "highlights": [
+        "Entrada sólida al ecosistema Galaxy"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A25%20comprar"
+    },
+    {
+      "id": "realme-13",
+      "brand": "realme",
+      "name": "realme 13",
+      "modelCodes": [
+        "realme13",
+        "realme-13"
+      ],
+      "priceEur": 279,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 55,
+        "pantalla": 62,
+        "camara": 55,
+        "storage": 55,
+        "ram": 55,
+        "bateria": 72,
+        "conectividad": 50,
+        "audio": 48,
+        "sensores": 48,
+        "software": 48
+      },
+      "highlights": [
+        "Carga rápida y pantalla fluida"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=realme%20realme%2013%20comprar"
+    },
+    {
+      "id": "nothing-phone-3a",
+      "brand": "Nothing",
+      "name": "Nothing Phone (3a)",
+      "modelCodes": [
+        "nothingphone3a",
+        "nothing-phone-3a"
+      ],
+      "priceEur": 329,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 62,
+        "pantalla": 70,
+        "camara": 68,
+        "storage": 55,
+        "ram": 62,
+        "bateria": 70,
+        "conectividad": 58,
+        "audio": 58,
+        "sensores": 52,
+        "software": 68
+      },
+      "highlights": [
+        "Glyph y cámara con carácter a precio medio"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Nothing%20Nothing%20Phone%20(3a)%20comprar"
+    },
+    {
+      "id": "samsung-a35",
+      "brand": "Samsung",
+      "name": "Galaxy A35",
+      "modelCodes": [
+        "galaxya35",
+        "samsung-a35"
+      ],
+      "priceEur": 329,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 55,
+        "pantalla": 65,
+        "camara": 58,
+        "storage": 55,
+        "ram": 55,
+        "bateria": 65,
+        "conectividad": 55,
+        "audio": 50,
+        "sensores": 55,
+        "software": 70
+      },
+      "highlights": [
+        "Actualizaciones largas de Samsung"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A35%20comprar"
+    },
+    {
+      "id": "poco-x7",
+      "brand": "Xiaomi",
+      "name": "POCO X7",
+      "modelCodes": [
+        "pocox7",
+        "poco-x7"
+      ],
+      "priceEur": 329,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 72,
+        "pantalla": 72,
+        "camara": 55,
+        "storage": 60,
+        "ram": 68,
+        "bateria": 72,
+        "conectividad": 55,
+        "audio": 50,
+        "sensores": 50,
+        "software": 45
+      },
+      "highlights": [
+        "Rendimiento alto sin pagar flagship"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20POCO%20X7%20comprar"
+    },
+    {
+      "id": "cmf-phone-2-pro",
+      "brand": "Nothing",
+      "name": "CMF Phone 2 Pro",
+      "modelCodes": [
+        "cmfphone2pro",
+        "cmf-phone-2-pro"
+      ],
+      "priceEur": 349,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 58,
+        "pantalla": 65,
+        "camara": 62,
+        "storage": 58,
+        "ram": 60,
+        "bateria": 72,
+        "conectividad": 52,
+        "audio": 50,
+        "sensores": 48,
+        "software": 60
+      },
+      "highlights": [
+        "Más cámara y batería en la línea CMF"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Nothing%20CMF%20Phone%202%20Pro%20comprar"
+    },
+    {
+      "id": "motorola-edge-50-fusion",
+      "brand": "Motorola",
+      "name": "Edge 50 Fusion",
+      "modelCodes": [
+        "edge50fusion",
+        "motorola-edge-50-fusion"
+      ],
+      "priceEur": 349,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 60,
+        "pantalla": 72,
+        "camara": 62,
+        "storage": 55,
+        "ram": 58,
+        "bateria": 72,
+        "conectividad": 55,
+        "audio": 55,
+        "sensores": 52,
+        "software": 55
+      },
+      "highlights": [
+        "Pantalla curva y carga rápida"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Motorola%20Edge%2050%20Fusion%20comprar"
+    },
+    {
+      "id": "samsung-a36",
+      "brand": "Samsung",
+      "name": "Galaxy A36",
+      "modelCodes": [
+        "galaxya36",
+        "samsung-a36"
+      ],
+      "priceEur": 379,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 58,
+        "pantalla": 70,
+        "camara": 62,
+        "storage": 58,
+        "ram": 58,
+        "bateria": 68,
+        "conectividad": 58,
+        "audio": 52,
+        "sensores": 58,
+        "software": 75
+      },
+      "highlights": [
+        "IP67 y años de One UI en gama media"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A36%20comprar"
+    },
+    {
+      "id": "poco-x6-pro",
+      "brand": "Xiaomi",
+      "name": "POCO X6 Pro",
+      "modelCodes": [
+        "pocox6pro",
+        "poco-x6-pro"
+      ],
+      "priceEur": 379,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 82,
+        "pantalla": 75,
+        "camara": 55,
+        "storage": 65,
+        "ram": 75,
+        "bateria": 65,
+        "conectividad": 55,
+        "audio": 50,
+        "sensores": 50,
+        "software": 45
+      },
+      "highlights": [
+        "SoC potente ideal para gaming"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20POCO%20X6%20Pro%20comprar"
+    },
+    {
+      "id": "oneplus-nord-ce4",
+      "brand": "OnePlus",
+      "name": "OnePlus Nord CE4",
+      "modelCodes": [
+        "oneplusnordce4",
+        "oneplus-nord-ce4"
+      ],
+      "priceEur": 399,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 70,
+        "pantalla": 72,
+        "camara": 58,
+        "storage": 62,
+        "ram": 68,
+        "bateria": 75,
+        "conectividad": 60,
+        "audio": 55,
+        "sensores": 52,
+        "software": 58
+      },
+      "highlights": [
+        "Carga 100W y OxygenOS fluido"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=OnePlus%20OnePlus%20Nord%20CE4%20comprar"
+    },
+    {
+      "id": "google-pixel-8a",
+      "brand": "Google",
+      "name": "Pixel 8a",
+      "modelCodes": [
+        "pixel8a",
+        "google-pixel-8a"
+      ],
+      "priceEur": 399,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 70,
+        "pantalla": 70,
+        "camara": 85,
+        "storage": 55,
+        "ram": 60,
+        "bateria": 60,
+        "conectividad": 65,
+        "audio": 55,
+        "sensores": 60,
+        "software": 90
+      },
+      "highlights": [
+        "Mejor cámara de su rango con IA de Google"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Google%20Pixel%208a%20comprar"
+    },
+    {
+      "id": "samsung-a55",
+      "brand": "Samsung",
+      "name": "Galaxy A55",
+      "modelCodes": [
+        "galaxya55",
+        "samsung-a55"
+      ],
+      "priceEur": 429,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 62,
+        "pantalla": 72,
+        "camara": 65,
+        "storage": 60,
+        "ram": 62,
+        "bateria": 68,
+        "conectividad": 60,
+        "audio": 55,
+        "sensores": 60,
+        "software": 75
+      },
+      "highlights": [
+        "Equilibrio gama media con IP67"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A55%20comprar"
+    },
+    {
+      "id": "honor-200",
+      "brand": "HONOR",
+      "name": "HONOR 200",
+      "modelCodes": [
+        "honor200",
+        "honor-200"
+      ],
+      "priceEur": 449,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 68,
+        "pantalla": 75,
+        "camara": 80,
+        "storage": 60,
+        "ram": 65,
+        "bateria": 70,
+        "conectividad": 58,
+        "audio": 55,
+        "sensores": 55,
+        "software": 55
+      },
+      "highlights": [
+        "Retrato tipo estudio a buen precio"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=HONOR%20HONOR%20200%20comprar"
+    },
+    {
+      "id": "realme-13-pro-plus",
+      "brand": "realme",
+      "name": "realme 13 Pro+",
+      "modelCodes": [
+        "realme13pro",
+        "realme-13-pro-plus"
+      ],
+      "priceEur": 449,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 68,
+        "pantalla": 72,
+        "camara": 82,
+        "storage": 62,
+        "ram": 65,
+        "bateria": 68,
+        "conectividad": 58,
+        "audio": 55,
+        "sensores": 55,
+        "software": 50
+      },
+      "highlights": [
+        "Teleobjetivo periscopio en gama media"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=realme%20realme%2013%20Pro%2B%20comprar"
+    },
+    {
+      "id": "oppo-reno13",
+      "brand": "OPPO",
+      "name": "OPPO Reno13",
+      "modelCodes": [
+        "opporeno13",
+        "oppo-reno13"
+      ],
+      "priceEur": 479,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 70,
+        "pantalla": 76,
+        "camara": 74,
+        "storage": 62,
+        "ram": 68,
+        "bateria": 72,
+        "conectividad": 60,
+        "audio": 58,
+        "sensores": 55,
+        "software": 58
+      },
+      "highlights": [
+        "Diseño fino y carga rápida"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=OPPO%20OPPO%20Reno13%20comprar"
+    },
+    {
+      "id": "oneplus-nord-4",
+      "brand": "OnePlus",
+      "name": "OnePlus Nord 4",
+      "modelCodes": [
+        "oneplusnord4",
+        "oneplus-nord-4"
+      ],
+      "priceEur": 479,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 78,
+        "pantalla": 75,
+        "camara": 60,
+        "storage": 70,
+        "ram": 75,
+        "bateria": 72,
+        "conectividad": 65,
+        "audio": 60,
+        "sensores": 55,
+        "software": 60
+      },
+      "highlights": [
+        "Chasis metálico y carga 100W"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=OnePlus%20OnePlus%20Nord%204%20comprar"
+    },
+    {
+      "id": "google-pixel-9a",
+      "brand": "Google",
+      "name": "Pixel 9a",
+      "modelCodes": [
+        "pixel9a",
+        "google-pixel-9a"
+      ],
+      "priceEur": 499,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 72,
+        "pantalla": 72,
+        "camara": 86,
+        "storage": 55,
+        "ram": 62,
+        "bateria": 65,
+        "conectividad": 68,
+        "audio": 55,
+        "sensores": 62,
+        "software": 92
+      },
+      "highlights": [
+        "Cámara Pixel a precio más asequible"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Google%20Pixel%209a%20comprar"
+    },
+    {
+      "id": "samsung-a56",
+      "brand": "Samsung",
+      "name": "Galaxy A56",
+      "modelCodes": [
+        "galaxya56",
+        "samsung-a56"
+      ],
+      "priceEur": 499,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 68,
+        "pantalla": 75,
+        "camara": 70,
+        "storage": 65,
+        "ram": 68,
+        "bateria": 70,
+        "conectividad": 65,
+        "audio": 58,
+        "sensores": 65,
+        "software": 78
+      },
+      "highlights": [
+        "Gama media alta con Galaxy AI"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20A56%20comprar"
+    },
+    {
+      "id": "poco-f6",
+      "brand": "Xiaomi",
+      "name": "POCO F6",
+      "modelCodes": [
+        "pocof6",
+        "poco-f6"
+      ],
+      "priceEur": 449,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 88,
+        "pantalla": 80,
+        "camara": 58,
+        "storage": 70,
+        "ram": 80,
+        "bateria": 70,
+        "conectividad": 60,
+        "audio": 55,
+        "sensores": 52,
+        "software": 48
+      },
+      "highlights": [
+        "Flagship killer para juegos"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20POCO%20F6%20comprar"
+    },
+    {
+      "id": "xiaomi-14t",
+      "brand": "Xiaomi",
+      "name": "Xiaomi 14T",
+      "modelCodes": [
+        "xiaomi14t",
+        "xiaomi-14t"
+      ],
+      "priceEur": 549,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 78,
+        "pantalla": 80,
+        "camara": 82,
+        "storage": 65,
+        "ram": 70,
+        "bateria": 70,
+        "conectividad": 70,
+        "audio": 60,
+        "sensores": 60,
+        "software": 55
+      },
+      "highlights": [
+        "Leica y pantalla AMOLED brillante"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20Xiaomi%2014T%20comprar"
+    },
+    {
+      "id": "vivo-v40",
+      "brand": "vivo",
+      "name": "vivo V40",
+      "modelCodes": [
+        "vivov40",
+        "vivo-v40"
+      ],
+      "priceEur": 549,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 65,
+        "pantalla": 72,
+        "camara": 85,
+        "storage": 60,
+        "ram": 62,
+        "bateria": 68,
+        "conectividad": 55,
+        "audio": 55,
+        "sensores": 55,
+        "software": 50
+      },
+      "highlights": [
+        "Enfoque en selfie y retrato"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=vivo%20vivo%20V40%20comprar"
+    },
+    {
+      "id": "oneplus-13r",
+      "brand": "OnePlus",
+      "name": "OnePlus 13R",
+      "modelCodes": [
+        "oneplus13r",
+        "oneplus-13r"
+      ],
+      "priceEur": 599,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 85,
+        "pantalla": 82,
+        "camara": 68,
+        "storage": 72,
+        "ram": 80,
+        "bateria": 80,
+        "conectividad": 70,
+        "audio": 62,
+        "sensores": 60,
+        "software": 65
+      },
+      "highlights": [
+        "Flagship-lite con batería enorme"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=OnePlus%20OnePlus%2013R%20comprar"
+    },
+    {
+      "id": "samsung-s24-fe",
+      "brand": "Samsung",
+      "name": "Galaxy S24 FE",
+      "modelCodes": [
+        "galaxys24fe",
+        "samsung-s24-fe"
+      ],
+      "priceEur": 649,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 80,
+        "pantalla": 82,
+        "camara": 75,
+        "storage": 65,
+        "ram": 70,
+        "bateria": 72,
+        "conectividad": 75,
+        "audio": 65,
+        "sensores": 70,
+        "software": 80
+      },
+      "highlights": [
+        "Flagship Experience a menor precio"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20S24%20FE%20comprar"
+    },
+    {
+      "id": "google-pixel-9",
+      "brand": "Google",
+      "name": "Pixel 9",
+      "modelCodes": [
+        "pixel9",
+        "google-pixel-9"
+      ],
+      "priceEur": 749,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 80,
+        "pantalla": 82,
+        "camara": 92,
+        "storage": 65,
+        "ram": 72,
+        "bateria": 68,
+        "conectividad": 75,
+        "audio": 65,
+        "sensores": 70,
+        "software": 95
+      },
+      "highlights": [
+        "Software y cámara de referencia"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Google%20Pixel%209%20comprar"
+    },
+    {
+      "id": "samsung-s25",
+      "brand": "Samsung",
+      "name": "Galaxy S25",
+      "modelCodes": [
+        "galaxys25",
+        "samsung-s25"
+      ],
+      "priceEur": 799,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 92,
+        "pantalla": 90,
+        "camara": 85,
+        "storage": 72,
+        "ram": 78,
+        "bateria": 72,
+        "conectividad": 82,
+        "audio": 72,
+        "sensores": 78,
+        "software": 88
+      },
+      "highlights": [
+        "Flagship compacto con Galaxy AI"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20S25%20comprar"
+    },
+    {
+      "id": "xiaomi-15",
+      "brand": "Xiaomi",
+      "name": "Xiaomi 15",
+      "modelCodes": [
+        "xiaomi15",
+        "xiaomi-15"
+      ],
+      "priceEur": 849,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 94,
+        "pantalla": 88,
+        "camara": 88,
+        "storage": 75,
+        "ram": 85,
+        "bateria": 75,
+        "conectividad": 80,
+        "audio": 68,
+        "sensores": 70,
+        "software": 60
+      },
+      "highlights": [
+        "Snapdragon top y Leica en compacto"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Xiaomi%20Xiaomi%2015%20comprar"
+    },
+    {
+      "id": "fairphone-5",
+      "brand": "Fairphone",
+      "name": "Fairphone 5",
+      "modelCodes": [
+        "fairphone5",
+        "fairphone-5"
+      ],
+      "priceEur": 699,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 55,
+        "pantalla": 60,
+        "camara": 55,
+        "storage": 55,
+        "ram": 55,
+        "bateria": 60,
+        "conectividad": 60,
+        "audio": 45,
+        "sensores": 50,
+        "software": 80
+      },
+      "highlights": [
+        "Reparable y con ética de materiales"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Fairphone%20Fairphone%205%20comprar"
+    },
+    {
+      "id": "iphone-16e",
+      "brand": "Apple",
+      "name": "iPhone 16e",
+      "modelCodes": [
+        "iphone16e",
+        "iphone-16e"
+      ],
+      "priceEur": 699,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 90,
+        "pantalla": 72,
+        "camara": 75,
+        "storage": 55,
+        "ram": 65,
+        "bateria": 70,
+        "conectividad": 75,
+        "audio": 70,
+        "sensores": 75,
+        "software": 95
+      },
+      "highlights": [
+        "Apple Intelligence a precio de entrada"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Apple%20iPhone%2016e%20comprar"
+    },
+    {
+      "id": "iphone-16",
+      "brand": "Apple",
+      "name": "iPhone 16",
+      "modelCodes": [
+        "iphone16",
+        "iphone-16"
+      ],
+      "priceEur": 959,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 95,
+        "pantalla": 85,
+        "camara": 88,
+        "storage": 60,
+        "ram": 70,
+        "bateria": 75,
+        "conectividad": 80,
+        "audio": 75,
+        "sensores": 80,
+        "software": 95
+      },
+      "highlights": [
+        "Ecosistema Apple y soporte largo"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Apple%20iPhone%2016%20comprar"
+    },
+    {
+      "id": "samsung-s25-ultra",
+      "brand": "Samsung",
+      "name": "Galaxy S25 Ultra",
+      "modelCodes": [
+        "galaxys25ultra",
+        "samsung-s25-ultra"
+      ],
+      "priceEur": 1299,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 96,
+        "pantalla": 95,
+        "camara": 95,
+        "storage": 85,
+        "ram": 90,
+        "bateria": 80,
+        "conectividad": 90,
+        "audio": 78,
+        "sensores": 90,
+        "software": 90
+      },
+      "highlights": [
+        "S Pen y zoom de referencia"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Samsung%20Galaxy%20S25%20Ultra%20comprar"
+    },
+    {
+      "id": "asus-rog-8",
+      "brand": "ASUS",
+      "name": "ROG Phone 8",
+      "modelCodes": [
+        "rogphone8",
+        "asus-rog-8"
+      ],
+      "priceEur": 999,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 98,
+        "pantalla": 90,
+        "camara": 60,
+        "storage": 80,
+        "ram": 95,
+        "bateria": 85,
+        "conectividad": 75,
+        "audio": 80,
+        "sensores": 65,
+        "software": 50
+      },
+      "highlights": [
+        "Bestia gaming con refrigeración activa"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=ASUS%20ROG%20Phone%208%20comprar"
+    },
+    {
+      "id": "honor-magic7-lite",
+      "brand": "HONOR",
+      "name": "Magic7 Lite",
+      "modelCodes": [
+        "magic7lite",
+        "honor-magic7-lite"
+      ],
+      "priceEur": 449,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 65,
+        "pantalla": 74,
+        "camara": 68,
+        "storage": 60,
+        "ram": 65,
+        "bateria": 82,
+        "conectividad": 58,
+        "audio": 55,
+        "sensores": 55,
+        "software": 55
+      },
+      "highlights": [
+        "Batería enorme en formato lite"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=HONOR%20Magic7%20Lite%20comprar"
+    },
+    {
+      "id": "motorola-edge-50-pro",
+      "brand": "Motorola",
+      "name": "Edge 50 Pro",
+      "modelCodes": [
+        "edge50pro",
+        "motorola-edge-50-pro"
+      ],
+      "priceEur": 599,
+      "currency": "EUR",
+      "capabilities": {
+        "soc": 75,
+        "pantalla": 82,
+        "camara": 72,
+        "storage": 65,
+        "ram": 70,
+        "bateria": 72,
+        "conectividad": 68,
+        "audio": 60,
+        "sensores": 58,
+        "software": 58
+      },
+      "highlights": [
+        "Carga 125W y acabado premium"
+      ],
+      "purchaseUrl": "https://www.google.com/search?q=Motorola%20Edge%2050%20Pro%20comprar"
+    }
+  ]
+}
